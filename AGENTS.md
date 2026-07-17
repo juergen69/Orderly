@@ -36,3 +36,20 @@ npm run test
 ## Commit convention
 
 Use the commit message specified in the substep plan file.
+
+## Creating Pull Requests
+
+After completing each substep:
+
+1. Push the branch to origin:
+   ```
+   git push -u origin substep/<NN>-<short-name>
+   ```
+2. Create a PR using `gh`:
+   ```
+   gh pr create --base main --title "<commit message from substep plan>" --body "<description>"
+   ```
+3. Include in the PR body:
+   - Substep number and dependencies
+   - Summary of changes
+   - Validation results (typecheck/test status)
