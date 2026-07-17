@@ -53,3 +53,30 @@ After completing each substep:
    - Substep number and dependencies
    - Summary of changes
    - Validation results (typecheck/test status)
+
+## kilo-code-bot review loop (MUST follow before merging)
+
+After opening a PR, the `kilo-code-bot[bot]` runs a "Kilo Code Review" check
+and posts its findings as **PR review comments** plus an issue-comment summary
+(`<!-- kilo-review -->`).
+
+- Do NOT treat a `success` conclusion on the Kilo Code Review **check run** as
+  "no issues". The check just reports that the review ran; the actual findings
+  live in the PR review comments / issue-comment summary, which may say
+  "N Issues Found | Recommendation: Address before merge" even when the check
+  is `success`.
+- Always fetch and READ the review comments before merging:
+  ```
+  gh api repos/<owner>/<repo>/pulls/<N>/comments
+  gh api repos/<owner>/<repo>/issues/<N>/comments   # the kilo-review summary
+  ```
+- If the bot found issues: fix ALL of them, commit on the same branch, push,
+  and WAIT for the bot to re-review the new head commit.
+- Only merge when the re-review summary says "No Issues Found | Recommendation:
+  Merge". Then merge with `gh pr merge <N> --merge --delete-branch`.
+
+## Notes
+
+- No separate agent/subagent (Task tool) is used for these substeps; the work
+  is done directly in the main session. The file `AGENTS.md` (not `agents.md`)
+  is the workflow spec for this project.
