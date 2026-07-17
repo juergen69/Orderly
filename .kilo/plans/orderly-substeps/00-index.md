@@ -48,7 +48,7 @@ src/components/ date picker, dialogs, toast, palette overlay, drawer/sheet
 | 05 ✅ | Domain: recurrence | 02 | §2, §5.8 |
 | 06 ✅ | Domain: reminders + calendar | 02 | §2, §5.5–5.7 |
 | 07 ✅ | Domain: truncation + url-utils + archive | 02 | §2, §5.12, §5.14 |
-| 08 | Domain: colors + tags + quick-add + progress | 02, 03 | §2, §5.1, §5.3, §5.15, §5.17 |
+| 08 ✅ | Domain: colors + tags + quick-add + progress | 02, 03 | §2, §5.1, §5.3, §5.15, §5.17 |
 | 09 | Storage: Repository + InMemory + contract test | 02 | §3, §4, §5.13, §8 |
 | 10 | Storage: IndexedDbRepository + migration | 09 | §3, §5.13, §6 |
 | 11 | Store (Zustand) + localStorage UI slice | 08, 09 | §4, §5.11, §6 |
