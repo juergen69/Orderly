@@ -21,9 +21,21 @@ describe('parseQuickAdd', () => {
     expect(r.title).toBe('email boss');
   });
 
-  it('keeps a literal when project is unmatched', () => {
+  it('returns null when project is unmatched', () => {
     const r = parseQuickAdd('call @dentist', projects, TODAY);
-    expect(r.projectId).toBe('dentist');
+    expect(r.projectId).toBeNull();
+  });
+
+  it('keeps a bare # token in the title', () => {
+    const r = parseQuickAdd('note # here', projects, TODAY);
+    expect(r.title).toBe('note # here');
+    expect(r.tags).toEqual([]);
+  });
+
+  it('keeps a bare @ token in the title', () => {
+    const r = parseQuickAdd('ping @ someone', projects, TODAY);
+    expect(r.title).toBe('ping @ someone');
+    expect(r.projectId).toBeNull();
   });
 
   it('parses !today', () => {

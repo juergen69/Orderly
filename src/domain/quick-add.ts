@@ -10,15 +10,6 @@ export interface QuickAddResult {
 
 const DAY_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 type DayName = (typeof DAY_NAMES)[number];
-const DAY_TOKENS: Record<DayName, boolean> = {
-  sun: true,
-  mon: true,
-  tue: true,
-  wed: true,
-  thu: true,
-  fri: true,
-  sat: true,
-};
 
 function nextWeekday(from: Date, target: number): Date {
   const result = new Date(from.getFullYear(), from.getMonth(), from.getDate());
@@ -37,9 +28,9 @@ function resolveDueToken(token: string, today: Date): string | null {
     return formatDate(t);
   }
   if (lower.startsWith('!') && lower.length > 1) {
-    const day = lower.slice(1) as DayName;
-    if (DAY_TOKENS[day]) {
-      const target = DAY_NAMES.indexOf(day);
+    const candidate = lower.slice(1);
+    if (DAY_NAMES.includes(candidate as DayName)) {
+      const target = DAY_NAMES.indexOf(candidate as DayName);
       return formatDate(nextWeekday(today, target));
     }
   }
@@ -77,6 +68,8 @@ export function parseQuickAdd(
       const tag = token.slice(1).trim().toLowerCase();
       if (tag.length > 0 && !result.tags.includes(tag)) {
         result.tags.push(tag);
+      } else if (tag.length === 0) {
+        titleParts.push(token);
       }
       continue;
     }
@@ -87,7 +80,11 @@ export function parseQuickAdd(
         const match = projects.find(
           (p) => p.name.trim().toLowerCase() === name.toLowerCase(),
         );
-        result.projectId = match ? match.id : name;
+        if (match) {
+          result.projectId = match.id;
+        }
+      } else {
+        titleParts.push(token);
       }
       continue;
     }
