@@ -18,6 +18,7 @@ function isValidCalendarDate(s: string): boolean {
   const year = Number(match[1]);
   const month = Number(match[2]);
   const day = Number(match[3]);
+  if (year < 1 || year > 9999) return false;
   const date = new Date(year, month - 1, day);
   return (
     date.getFullYear() === year &&
@@ -53,8 +54,8 @@ export interface ImportPayload {
 
 const projectImportSchema = z.object({
   id: z.string(),
-  name: z.string(),
-  color: z.string(),
+  name: projectNameSchema,
+  color: colorSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
   order: z.string(),
@@ -64,10 +65,10 @@ const projectImportSchema = z.object({
 const todoImportSchema = z.object({
   id: z.string(),
   projectId: z.string().nullable(),
-  title: z.string(),
-  description: z.string(),
+  title: todoTitleSchema,
+  description: descriptionSchema,
   status: statusSchema,
-  dueDate: z.string().nullable(),
+  dueDate: dueDateSchema,
   boardOrder: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -75,7 +76,7 @@ const todoImportSchema = z.object({
   recurrence: recurrenceSchema,
   reminderAt: z.string().nullable(),
   reminderLead: z.string().nullable(),
-  tags: z.array(z.string()),
+  tags: tagsSchema,
   isFrog: z.boolean(),
 });
 
