@@ -14,6 +14,9 @@ single-frog rules.
      strip unknown top-level keys, reject version mismatch specifically, generic
      message on bad shape) → confirmation dialog → atomic `replaceAll`.
    - On import failure prior data is intact (relies on substep 09/10 atomicity).
+   - **After a successful import**, call `reconcileFocusSlots` (substep 11) so
+     focus slots referencing pre-import todo ids are cleared (imported todos
+     have new ids). Focus **areas** (free text) remain untouched.
 2. Eat-the-frog (§5.20): finalize rules across board:
    - Corner icon toggle with `stopPropagation`.
    - Single frog board-wide: setting one true sets the previous frog false.

@@ -21,9 +21,17 @@ reminders.
      (`rollForward` to `>= today`), set the original's `recurrence:'none'`, and
      spawn **one** successor copying title/description/projectId with the new
      dueDate and the original rule. Successor starts **frog-free**.
+   - **Sub-steps:** the successor **copies the original's sub-steps as fresh,
+     all-incomplete sub-steps** (new ids, new `todoId` = successor id,
+     `done:false`, preserving titles + relative order). The original keeps its
+     own sub-steps unchanged (it is demoted to a normal one-off todo, not
+     deleted). This makes each occurrence an independent checklist.
+   - Successor status starts in the first/"todo" column with a fresh
+     `boardOrder` (do not copy the original's order key).
 4. Tests with fake timers: reminder fire/seen/dismiss/snooze lifecycle;
-   recurrence spawns exactly one successor, original demoted to `none`, successor
-   frog-free.
+   recurrence spawns exactly one successor, original demoted to `none` and
+   retains its sub-steps, successor is frog-free with copied all-incomplete
+   sub-steps (new ids pointing at the successor).
 
 ## Do NOT
 - Build the full board/detail UI (later substeps). Tickers can mount from a

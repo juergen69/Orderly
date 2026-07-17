@@ -16,11 +16,18 @@ shell if not already present.
    - Create/edit via a small palette + validated `#rrggbb` hex input (reuse
      `validation` + `colors` default).
    - Delete → confirmation dialog offering **cascade delete** vs **reassign**
-     todos to another project / no project.
+     todos to another project / no project. Both paths call the repository
+     `deleteProject(id, { mode })` from substep 09:
+     - `cascade` removes the project, its todos, and those todos' sub-steps.
+     - `reassign` moves the todos to the chosen target (`projectId | null`);
+       **sub-steps stay attached to their parent todo** (they reference
+       `todoId`, not `projectId`, so they move with it) — never orphaned or
+       left behind.
 3. `src/components/ConfirmDialog.tsx` (+ CSS Module) — accessible dialog
    (`role="dialog"`, focus-trapped) reused by other features.
 4. Component tests: render/sort, create with invalid hex rejected, delete dialog
-   cascade vs reassign paths (against store + InMemoryRepository).
+   cascade vs reassign paths (against store + InMemoryRepository); assert
+   reassigned todos keep their sub-steps and cascade removes them.
 
 ## Do NOT
 - Build the board (substep 14). A placeholder main area is fine.

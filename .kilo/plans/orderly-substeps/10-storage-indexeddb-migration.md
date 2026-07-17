@@ -14,11 +14,17 @@ migration/backfill of legacy/additive fields.
      failure rolls back (prior data intact).
    - Cascade sub-step delete on todo delete.
 2. `src/storage/migration.ts` — on-load backfill:
-   - Legacy done todos missing `doneAt` → use `updatedAt`.
+   - Legacy done todos missing `doneAt` → backfill via the fallback chain
+     `doneAt ?? updatedAt ?? createdAt ?? nowIso()`. `createdAt` is required on
+     all entities, so the chain effectively always resolves; `nowIso()` is a
+     final safety net for even older/corrupt records so migration never throws
+     or produces `undefined`.
    - Additive field defaults: `recurrence:'none'`, `doneAt:null`, `tags:[]`,
      `isFrog:false` (and any other new fields).
 3. Extend `contract.test.ts` usage: run the shared suite against
-   `IndexedDbRepository` using `fake-indexeddb`. Add a migration unit test.
+   `IndexedDbRepository` using `fake-indexeddb`. Add a migration unit test
+   covering the fallback chain (done todo with only `updatedAt`; with only
+   `createdAt`; with none → `nowIso()`).
 
 ## Do NOT
 - Touch store/UI. Keep the repo interface identical to substep 09.

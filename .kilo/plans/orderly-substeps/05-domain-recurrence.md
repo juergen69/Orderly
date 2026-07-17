@@ -12,8 +12,15 @@ roll-forward.
    - Month clamping: Jan 31 + 1 month → Feb 28/29.
    - Year clamping: Feb 29 + 1 year → Feb 28.
    - `rollForward(dueDate, rule, today)` advancing until `>= today`, with a
-     **capped loop** (e.g. max iterations) to avoid runaway on far-past dates;
-     document the cap.
+     **capped loop** to avoid runaway on far-past dates. **Cap = 4000
+     iterations** (exported as a named constant `ROLL_FORWARD_MAX_ITERATIONS`).
+     4000 covers the worst realistic case — `daily` over a ~10-year gap
+     (~3650 steps) — while `weekly`/`monthly`/`yearly` need far fewer.
+     Implementations MAY compute the number of periods arithmetically for
+     `daily`/`weekly` (still applying month/year clamping for
+     `monthly`/`yearly`) to stay cheap. If the cap is hit (pathological/corrupt
+     input), stop and return the last computed date rather than looping forever;
+     do not throw.
    - `rule === 'none'` is a no-op / not advanced.
 2. `src/domain/recurrence.test.ts` — each cadence, leap-year edges, month-end
    clamping, long-overdue roll-forward reaching `>= today`, cap safety.

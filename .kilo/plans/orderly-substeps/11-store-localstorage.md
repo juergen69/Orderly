@@ -20,9 +20,20 @@ slice with safe fallbacks.
 4. `src/store/uiState.ts` — localStorage slice with **SSR/private-mode
    fallback** (never throw; fall back to defaults): active view
    (`board|calendar`), "show all recurring" toggle, 9 focus slots, 3 focus
-   areas. **Focus areas are never touched by import/export.**
+   areas.
+   - **Focus AREAS (free text) are never touched by import/export.**
+   - **Focus SLOTS reference todos by id**, so they must be reconciled whenever
+     the todo set is replaced or a referenced todo disappears:
+     - Provide `reconcileFocusSlots(validTodoIds)` that clears any slot whose
+       `todoId` is not in `validTodoIds`.
+     - Call it after `replaceAll` (import) — since imported todos get their own
+       ids, this effectively **resets all focus slots** (they will not match).
+     - Also call it after todo delete and when a referenced todo becomes done
+       (per §5.10 render-empty rule), so slots never dangle.
 5. Tests: `src/store/store.test.ts` (actions persist via InMemoryRepository,
-   selectors correct) and a uiState test proving localStorage-absent fallback.
+   selectors correct), a uiState test proving localStorage-absent fallback, and
+   a `reconcileFocusSlots` test proving import/delete clears stale slot refs
+   while leaving focus areas untouched.
 
 ## Do NOT
 - Build React components yet. Store + hooks only.
