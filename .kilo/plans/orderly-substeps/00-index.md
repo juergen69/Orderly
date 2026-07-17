@@ -41,8 +41,8 @@ src/components/ date picker, dialogs, toast, palette overlay, drawer/sheet
 
 | #  | Substep | Depends on | Spec |
 |----|---------|-----------|------|
-| 01 | Project scaffold + theme tokens | — | §1 |
-| 02 | Domain: types, ids, time | 01 | §2, §3 |
+| 01 ✅ | Project scaffold + theme tokens | — | §1 |
+| 02 ✅ | Domain: types, ids, time | 01 | §2, §3 |
 | 03 | Domain: validation (Zod) | 02 | §2, §3, §6 |
 | 04 | Domain: ordering (fractional index) | 02 | §2, §5.2, §6 |
 | 05 | Domain: recurrence | 02 | §2, §5.8 |
