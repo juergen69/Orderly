@@ -76,6 +76,17 @@ describe('ordering', () => {
       expect(() => between('z', 'a')).toThrow('Invalid order');
       expect(() => between('m', 'm')).toThrow('Invalid order');
     });
+
+    it('returns a strictly ordered key when a is a prefix of b (non-degenerate)', () => {
+      const result = between('a', 'ab');
+      expect(result > 'a').toBe(true);
+      expect(result < 'ab').toBe(true);
+    });
+
+    it('throws when a is a prefix of b and b is the immediate minimal-suffix successor', () => {
+      expect(() => between('m', 'ma')).toThrow('no key exists strictly between');
+      expect(() => between('a', 'aa')).toThrow('no key exists strictly between');
+    });
   });
 
   describe('ordering correctness', () => {
@@ -216,6 +227,31 @@ describe('ordering', () => {
       expect(result.length).toBe(1);
       expect(result[0]!.length).toBeLessThanOrEqual(10);
     });
+
+    it('rebalance handles unsorted input without scrambling order', () => {
+      const keys = ['c', 'a', 'b'];
+      const rebalanced = rebalance(keys);
+
+      expect(rebalanced.length).toBe(keys.length);
+      // rebalanced[i] must be the new key for keys[i], so the relative
+      // order between original indices must be preserved.
+      expect(rebalanced[1]! < rebalanced[2]!).toBe(true); // 'a' < 'b'
+      expect(rebalanced[2]! < rebalanced[0]!).toBe(true); // 'b' < 'c'
+    });
+
+    it('rebalance produces distinct keys for large n (no truncation collisions)', () => {
+      // Zero-pad so lexicographic order matches numeric/insertion order.
+      const keys = Array.from({ length: 2000 }, (_, i) => `k${String(i).padStart(4, '0')}`);
+      const rebalanced = rebalance(keys);
+      const unique = new Set(rebalanced);
+      expect(unique.size).toBe(rebalanced.length);
+
+      // rebalanced[i] is the replacement for keys[i]; since `keys` is
+      // already in ascending order, the replacements must be too.
+      for (let i = 0; i < rebalanced.length - 1; i++) {
+        expect(rebalanced[i]! < rebalanced[i + 1]!).toBe(true);
+      }
+    });
   });
 
   describe('edge cases', () => {
@@ -245,6 +281,16 @@ describe('ordering', () => {
       const result = between(a, b);
       expect(result > a).toBe(true);
       expect(result < b).toBe(true);
+    });
+
+    it('does not throw generating a key before the minimal key', () => {
+      const result = between(undefined, 'a');
+      expect(result < 'a').toBe(true);
+    });
+
+    it('does not throw generating a key before a multi-char all-minimal key', () => {
+      const result = between(undefined, 'aa');
+      expect(result < 'aa').toBe(true);
     });
   });
 });
