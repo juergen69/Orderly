@@ -23,6 +23,13 @@ export function parseDate(iso: string): Date {
       Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
     throw new Error(`Invalid date format: ${iso}`);
   }
+  if (month < 1 || month > 12) {
+    throw new Error(`Invalid month: ${month}`);
+  }
+  const daysInMonth = new Date(year, month, 0).getDate();
+  if (day < 1 || day > daysInMonth) {
+    throw new Error(`Invalid day: ${day} for month ${month}`);
+  }
   return new Date(year, month - 1, day);
 }
 

@@ -55,6 +55,22 @@ describe('parseDate', () => {
     expect(() => parseDate('not-a-date')).toThrow();
     expect(() => parseDate('2025/06/15')).toThrow();
   });
+
+  it('throws on invalid month', () => {
+    expect(() => parseDate('2025-13-01')).toThrow('Invalid month: 13');
+    expect(() => parseDate('2025-00-01')).toThrow('Invalid month: 0');
+  });
+
+  it('throws on invalid day', () => {
+    expect(() => parseDate('2025-01-32')).toThrow('Invalid day: 32');
+    expect(() => parseDate('2025-01-00')).toThrow('Invalid day: 0');
+    expect(() => parseDate('2025-02-30')).toThrow('Invalid day: 30');
+  });
+
+  it('handles leap years correctly', () => {
+    expect(() => parseDate('2024-02-29')).not.toThrow();
+    expect(() => parseDate('2025-02-29')).toThrow('Invalid day: 29');
+  });
 });
 
 describe('startOfDay', () => {
