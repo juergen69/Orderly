@@ -61,6 +61,7 @@ export interface StoreState {
   addTagFilter(tag: string): void;
   removeTagFilter(tag: string): void;
   clearTagFilters(): void;
+  setSelectedProjectId(projectId: string | null): void;
 
   replaceAll(data: { projects: Project[]; todos: Todo[]; subSteps: SubStep[] }): Promise<void>;
   exportAll(): Promise<{ projects: Project[]; todos: Todo[]; subSteps: SubStep[] }>;
@@ -427,6 +428,10 @@ export function createStore(options: CreateStoreOptions) {
 
     clearTagFilters() {
       set((state) => ({ ui: { ...state.ui, selectedTags: [] } }));
+    },
+
+    setSelectedProjectId(projectId) {
+      set((state) => ({ ui: { ...state.ui, selectedProjectId: projectId } }));
     },
 
     async replaceAll(data) {
