@@ -1,0 +1,79 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  background-color: rgb(0 0 0 / 0.6);
+  z-index: 1100;
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: min(28rem, 100%);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-glow);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-primary);
+}
+
+.dialog:focus {
+  outline: none;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.cancel,
+.confirm,
+.confirmDestructive {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+}
+
+.cancel {
+  background: none;
+  color: var(--color-text-primary);
+}
+
+.confirm {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-bg-primary);
+}
+
+.confirmDestructive {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+  color: var(--color-bg-primary);
+}
+
+.confirm:disabled,
+.confirmDestructive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

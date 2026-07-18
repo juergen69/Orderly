@@ -136,14 +136,31 @@ export function createStore(options: CreateStoreOptions) {
     },
 
     async deleteProject(id, options) {
-      const { repository, projects, todos, ui } = get();
+      const { repository, projects, todos, subSteps, ui } = get();
       await repository.deleteProject(id, options);
       const remainingProjects = projects.filter((p) => p.id !== id);
-      const remainingTodos = todos.filter((t) => t.projectId !== id);
+      let remainingTodos: Todo[];
+      let remainingSubSteps = subSteps;
+      if (options.mode === 'cascade') {
+        // Drop the project's todos and their sub-steps.
+        const removedTodoIds = new Set(
+          todos.filter((t) => t.projectId === id).map((t) => t.id),
+        );
+        remainingTodos = todos.filter((t) => t.projectId !== id);
+        remainingSubSteps = subSteps.filter((s) => !removedTodoIds.has(s.todoId));
+      } else {
+        // Reassign the project's todos to the target; sub-steps ride along
+        // because they reference `todoId`, not `projectId`.
+        const target = options.reassignTo ?? null;
+        remainingTodos = todos.map((t) =>
+          t.projectId === id ? { ...t, projectId: target } : t,
+        );
+      }
       const validTodoIds = new Set(remainingTodos.map((t) => t.id));
       set({
         projects: remainingProjects,
         todos: remainingTodos,
+        subSteps: remainingSubSteps,
         ui: { ...ui, focusSlots: reconcileFocusSlots(ui.focusSlots, validTodoIds) },
       });
     },
