@@ -80,3 +80,34 @@ and posts its findings as **PR review comments** plus an issue-comment summary
 - No separate agent/subagent (Task tool) is used for these substeps; the work
   is done directly in the main session. The file `AGENTS.md` (not `agents.md`)
   is the workflow spec for this project.
+
+## Coding Rules
+
+The following rules are derived from recurring kilo-code-bot review findings across all PRs. Follow them to avoid repetitive fixes.
+
+### Error Handling & Recovery
+- Clear cached promises/state on failure paths so instances can recover from transient errors.
+- Never reject with `undefined` or `null`; preserve error context from the originating event.
+- Module-level mutable state (e.g., regexes with the `g` flag) is not concurrency/reentrancy safe — build fresh per call or document the single-threaded assumption.
+
+### Type Safety
+- Avoid `as` casts that bypass type guards; prefer runtime checks (`Array.isArray`, `typeof`, `in`) before narrowing.
+- Default to safe values for optional data (`?? []`, `?? {}`) rather than casting potentially `undefined`/`null` values.
+- When a field is named `*Id`, it must hold an actual identifier — never substitute a raw label or literal.
+
+### Validation
+- Reuse existing domain schemas/validators for imported/serialized data; do not duplicate validation logic with weaker rules.
+- Validate all components of parsed strings (month/day ranges, year bounds) — `new Date()` silently rolls over invalid inputs.
+- URL preservation must not extend past the truncation limit; clamp to `limit` or drop URLs that straddle the cutoff.
+
+### Edge Cases & Defaults
+- Handle empty inputs explicitly (empty arrays, empty strings, minimal keys) — document or implement behavior rather than leaving it unspecified.
+- Silent character loss (dropped tokens, truncated strings) is a bug — fall through to literal text or throw a clear error.
+- Bare tokens (`#`, `@`) with no content should not be silently consumed; preserve them as literal text.
+- Fractional-index operations must handle prefix relationships correctly; test `between('a', 'ab')` and similar prefix cases.
+- Functions that sort or redistribute must document whether input ordering is preserved or output is sorted.
+
+### Plan Completeness
+- When a plan specifies cascade behavior (delete, reassign, copy), explicitly state what happens to child entities (sub-steps, focus slots, etc.).
+- Specify fallback chains for missing legacy fields rather than leaving them implicit.
+- Specify concrete caps (iterations, lengths) for bounded loops — "max iterations" needs a number.
