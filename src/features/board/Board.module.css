@@ -1,0 +1,27 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-md);
+  height: 100%;
+  min-height: 0;
+}
+
+.overlayCard {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-glow);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  cursor: grabbing;
+}
+
+.overlayDot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}

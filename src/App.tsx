@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { TickerHost } from './features/TickerHost';
 import { ProjectsSidebar } from './features/projects/ProjectsSidebar';
+import { Board } from './features/board/Board';
 import { store } from './store/storeInstance';
 import styles from './App.module.css';
 
@@ -17,6 +18,9 @@ function App() {
     <div className={styles.shell}>
       <header className={styles.banner} role="banner">
         <h1 className={styles.title}>Orderly</h1>
+        <span className={styles.filterLabel}>
+          {selectedProject === null ? 'All projects' : selectedProject.name}
+        </span>
       </header>
 
       <div className={styles.body}>
@@ -26,13 +30,8 @@ function App() {
         />
 
         <main className={styles.main}>
-          <section className={styles.placeholder} aria-label="Board" role="region">
-            <p>
-              {selectedProject === null
-                ? 'Showing all projects.'
-                : `Filtered to "${selectedProject.name}".`}
-            </p>
-            <p className={styles.hint}>The board arrives in a later step.</p>
+          <section className={styles.boardRegion} aria-label="Board" role="region">
+            <Board filterProjectId={selectedProjectId} />
           </section>
         </main>
       </div>
