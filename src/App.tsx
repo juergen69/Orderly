@@ -8,6 +8,7 @@ import { FocusAreas } from './features/focus-areas/FocusAreas';
 import { SearchBar } from './features/search/SearchBar';
 import { TagsSidebar } from './features/tags/TagsSidebar';
 import { CommandPalette } from './features/command-palette/CommandPalette';
+import { ImportExport } from './features/io/ImportExport';
 import { TodoDetail } from './features/todo-detail/TodoDetail';
 import { store } from './store/storeInstance';
 import styles from './App.module.css';
@@ -51,6 +52,7 @@ function App() {
           {selectedProject === null ? 'All projects' : selectedProject.name}
         </span>
         <SearchBar />
+        <ImportExport />
         <button
           type="button"
           className={styles.paletteButton}

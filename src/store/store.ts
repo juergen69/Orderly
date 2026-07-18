@@ -304,9 +304,18 @@ export function createStore(options: CreateStoreOptions) {
     async toggleFrog(id) {
       const todo = get().todos.find((t) => t.id === id);
       if (!todo) return;
-      const updated: Todo = { ...todo, isFrog: !todo.isFrog, updatedAt: nowIso() };
-      await get().repository.updateTodo(updated);
-      set({ todos: get().todos.map((t) => (t.id === id ? updated : t)) });
+      const turningOn = !todo.isFrog;
+      const now = nowIso();
+      // Single frog board-wide: clearing others when one turns on.
+      const updatedTodos = get().todos.map((t) => {
+        if (t.id === id) return { ...t, isFrog: turningOn, updatedAt: now };
+        if (turningOn && t.isFrog) return { ...t, isFrog: false, updatedAt: now };
+        return t;
+      });
+      for (const t of updatedTodos) {
+        await get().repository.updateTodo(t);
+      }
+      set({ todos: updatedTodos });
     },
 
     async createSubStep(todoId, title) {
