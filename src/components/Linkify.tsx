@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from 'react';
-import { findUrls } from '../../domain/url-utils';
+import { findUrls } from '../domain/url-utils';
 
 function normalizeHref(value: string): string {
   return value.startsWith('www.') ? `https://${value}` : value;
