@@ -114,10 +114,30 @@
   color: var(--color-primary);
 }
 
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.tagChip {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  padding: 1px var(--spacing-xs);
+}
+
+.tagMore {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: var(--spacing-xs);
 }
 
 .progress {

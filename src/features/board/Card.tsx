@@ -24,9 +24,11 @@ export interface CardProps {
   subSteps: SubStep[];
   onToggleFrog: (id: string) => void;
   onOpenTodo?: (id: string) => void;
+  /** Max number of tag chips before collapsing into a +N overflow. */
+  maxTags?: number;
 }
 
-export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo }: CardProps) {
+export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTags = 3 }: CardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: todo.id });
   const [expanded, setExpanded] = useState(false);
@@ -48,6 +50,9 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo }: Card
       : null;
 
   const snippet = todo.description.trim().length > 0 ? truncate(todo.description) : '';
+
+  const visibleTags = todo.tags.slice(0, maxTags);
+  const overflowCount = todo.tags.length - visibleTags.length;
 
   return (
     <li
@@ -125,6 +130,17 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo }: Card
         <p className={styles.snippet}>
           <Linkify text={snippet} />
         </p>
+      )}
+
+      {todo.tags.length > 0 && (
+        <div className={styles.tags}>
+          {visibleTags.map((tag) => (
+            <span key={tag} className={styles.tagChip}>
+              #{tag}
+            </span>
+          ))}
+          {overflowCount > 0 && <span className={styles.tagMore}>+{overflowCount}</span>}
+        </div>
       )}
 
       <div className={styles.footer}>
