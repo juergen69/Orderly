@@ -10,6 +10,8 @@ import { TagsSidebar } from './features/tags/TagsSidebar';
 import { CommandPalette } from './features/command-palette/CommandPalette';
 import { ImportExport } from './features/io/ImportExport';
 import { TodoDetail } from './features/todo-detail/TodoDetail';
+import { Drawer } from './components/Drawer';
+import { useMediaQuery } from './hooks/useMediaQuery';
 import { store } from './store/storeInstance';
 import styles from './App.module.css';
 
@@ -22,6 +24,8 @@ function App() {
   const setSelectedProjectId = store((s) => s.setSelectedProjectId);
   const [openTodoId, setOpenTodoId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 639px)');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Cmd/Ctrl+K toggles the command palette.
   useEffect(() => {
@@ -53,6 +57,16 @@ function App() {
         </span>
         <SearchBar />
         <ImportExport />
+        {isMobile && (
+          <button
+            type="button"
+            className={styles.hamburger}
+            aria-label="Open filters"
+            onClick={() => setDrawerOpen(true)}
+          >
+            ☰
+          </button>
+        )}
         <button
           type="button"
           className={styles.paletteButton}
@@ -94,12 +108,32 @@ function App() {
       </header>
 
       <div className={styles.body}>
-        <ProjectsSidebar
-          selectedProjectId={selectedProjectId}
-          onSelect={setSelectedProjectId}
-        />
-
-        <TagsSidebar />
+        {isMobile ? (
+          <Drawer
+            open={drawerOpen}
+            title="Filters"
+            onClose={() => setDrawerOpen(false)}
+          >
+            <div className={styles.drawerSidebar}>
+              <ProjectsSidebar
+                selectedProjectId={selectedProjectId}
+                onSelect={(id) => {
+                  setSelectedProjectId(id);
+                  setDrawerOpen(false);
+                }}
+              />
+              <TagsSidebar />
+            </div>
+          </Drawer>
+        ) : (
+          <>
+            <ProjectsSidebar
+              selectedProjectId={selectedProjectId}
+              onSelect={setSelectedProjectId}
+            />
+            <TagsSidebar />
+          </>
+        )}
 
         <main className={styles.main}>
           {activeView === 'board' ? (
