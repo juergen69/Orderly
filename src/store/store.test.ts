@@ -94,7 +94,9 @@ describe('store actions', () => {
     await store.getState().toggleSubStep(s1.id);
     expect(store.getState().subSteps.find((s) => s.id === s1.id)?.done).toBe(true);
     await store.getState().reorderSubStep(s2.id, s1.id, undefined);
-    expect(store.getState().subSteps.find((s) => s.id === s2.id)?.order > s1.order).toBe(true);
+    const reorderedS2 = store.getState().subSteps.find((s) => s.id === s2.id);
+    expect(reorderedS2).toBeDefined();
+    expect(reorderedS2!.order > s1.order).toBe(true);
     await store.getState().deleteSubStep(s2.id);
     expect(store.getState().subSteps).toHaveLength(1);
   });

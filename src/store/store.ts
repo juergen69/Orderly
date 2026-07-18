@@ -4,8 +4,6 @@ import type {
   Project,
   SubStep,
   Todo,
-  FocusSlot,
-  FocusArea,
   Status,
   Recurrence,
 } from '../domain/types';

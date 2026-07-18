@@ -36,7 +36,7 @@ describe('monthGrid', () => {
 
   it('handles a month that starts on a Monday with no leading spillover', () => {
     const grid = monthGrid(2025, 8);
-    const first = grid[0][0]!;
+    const first = grid[0]![0]!;
     expect(first.date.getDate()).toBe(1);
     expect(first.inMonth).toBe(true);
   });
