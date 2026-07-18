@@ -1,0 +1,218 @@
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  height: 100%;
+  min-height: 0;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.monthNav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.monthLabel {
+  font-size: var(--font-size-base);
+  min-width: 9rem;
+  text-align: center;
+}
+
+.nav {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  width: 1.75rem;
+  height: 1.75rem;
+  cursor: pointer;
+}
+
+.todayButton {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.filters select,
+.search {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.weekdays,
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  padding: var(--spacing-xs) 0;
+}
+
+.grid {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+}
+
+.week {
+  flex: 1 1 0;
+  min-height: 3.5rem;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  text-align: left;
+}
+
+.day[data-outside] {
+  opacity: 0.45;
+}
+
+.day[data-today] {
+  border-color: var(--color-accent);
+}
+
+.dayNumber {
+  font-size: var(--font-size-xs);
+}
+
+.dayCount {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+}
+
+.dayDetail {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  padding: var(--spacing-md);
+}
+
+.dayDetailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dayDetailTitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.close {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.empty {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+.dayList {
+  list-style: none;
+  margin: var(--spacing-sm) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.dayItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dayItemTitle {
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+
+.dayItemTitle:hover {
+  text-decoration: underline;
+}
+
+.reschedule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.rescheduleLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+@media (max-width: 640px) {
+  .dayDetail {
+    position: fixed;
+    inset: auto 0 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 70vh;
+    overflow-y: auto;
+    z-index: 900;
+  }
+}
