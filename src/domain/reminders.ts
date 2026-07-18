@@ -25,7 +25,7 @@ function isValidLead(lead: string): boolean {
 
 function offsetDays(lead: string): number {
   if (lead in PRESET_OFFSETS) {
-    return PRESET_OFFSETS[lead];
+    return PRESET_OFFSETS[lead] ?? 0;
   }
   const match = /^(-?\d+)d$/.exec(lead);
   if (match && match[1] !== undefined) {

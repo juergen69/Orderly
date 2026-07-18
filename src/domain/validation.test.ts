@@ -341,7 +341,7 @@ describe('validation', () => {
       });
       expect(result.success).toBe(true);
       if (result.success) {
-        expect((result.data as Record<string, unknown>).unknownKey).toBeUndefined();
+        expect((result.data as unknown as Record<string, unknown>).unknownKey).toBeUndefined();
       }
     });
 
@@ -353,7 +353,7 @@ describe('validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.kind).toBe('version-mismatch');
-        expect(result.error.message).toContain('2');
+        expect((result.error as { message: string }).message).toContain('2');
       }
     });
 
@@ -389,7 +389,7 @@ describe('validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.kind).toBe('invalid-shape');
-        expect(result.error.issues.length).toBeGreaterThan(0);
+        expect((result.error as { issues: unknown[] }).issues.length).toBeGreaterThan(0);
       }
     });
 
@@ -403,7 +403,7 @@ describe('validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.kind).toBe('invalid-shape');
-        expect(result.error.issues.length).toBeGreaterThan(0);
+        expect((result.error as { issues: unknown[] }).issues.length).toBeGreaterThan(0);
       }
     });
 

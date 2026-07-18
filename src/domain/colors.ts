@@ -30,5 +30,5 @@ export function colorForTag(tag: string): string {
     return DEFAULT_COLOR;
   }
   const index = hashString(normalized) % PALETTE.length;
-  return PALETTE[index];
+  return PALETTE[index] ?? DEFAULT_COLOR;
 }
