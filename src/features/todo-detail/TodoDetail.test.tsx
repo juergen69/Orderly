@@ -110,4 +110,45 @@ describe('TodoDetail', () => {
     await user.click(screen.getByRole('button', { name: 'Remove tag drop' }));
     expect(store.getState().todos.find((t) => t.id === todoId)!.tags).toEqual(['keep']);
   });
+
+  it('does not clobber an immediate change made during the title debounce window', async () => {
+    const user = userEvent.setup();
+    render(<TodoDetail todoId={todoId} onClose={() => {}} />);
+
+    // Start a debounced title edit.
+    const input = screen.getByLabelText('Title');
+    await user.clear(input);
+    await user.type(input, 'Renamed');
+
+    // Immediately make a recurrence change (immediate save) within the window.
+    await user.selectOptions(screen.getByLabelText('Repeat'), 'weekly');
+    expect(store.getState().todos.find((t) => t.id === todoId)!.recurrence).toBe('weekly');
+
+    // After the debounce lands, the title is saved AND recurrence is preserved.
+    await waitFor(
+      () => {
+        const t = store.getState().todos.find((x) => x.id === todoId)!;
+        expect(t.title).toBe('Renamed');
+        expect(t.recurrence).toBe('weekly');
+      },
+      { timeout: TITLE_SAVE_DEBOUNCE_MS + 500 },
+    );
+  });
+
+  it('shows an error and does not save a description over 2000 chars', async () => {
+    const user = userEvent.setup();
+    render(<TodoDetail todoId={todoId} onClose={() => {}} />);
+
+    const longText = 'x'.repeat(2001);
+    const textarea = screen.getByLabelText('Description');
+    // fireEvent-style bulk set to avoid typing 2001 chars one at a time.
+    await user.click(textarea);
+    // eslint-disable-next-line testing-library/no-node-access
+    (textarea as HTMLTextAreaElement).value = '';
+    await user.paste(longText);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/at most 2000/i);
+    await new Promise((r) => setTimeout(r, TITLE_SAVE_DEBOUNCE_MS + 50));
+    expect(store.getState().todos.find((t) => t.id === todoId)!.description).toBe('');
+  });
 });

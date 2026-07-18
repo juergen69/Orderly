@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Recurrence, Todo } from '../../domain/types';
-import { todoTitleSchema, descriptionSchema, normalizeTags } from '../../domain/validation';
+import {
+  todoTitleSchema,
+  descriptionSchema,
+  recurrenceSchema,
+  normalizeTags,
+} from '../../domain/validation';
 import {
   REMINDER_LEAD_ON_DUE,
   REMINDER_LEAD_1_DAY,
@@ -48,6 +53,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const [title, setTitle] = useState(todo?.title ?? '');
   const [description, setDescription] = useState(todo?.description ?? '');
   const [titleError, setTitleError] = useState<string | null>(null);
+  const [descriptionError, setDescriptionError] = useState<string | null>(null);
   const [tagDraft, setTagDraft] = useState('');
 
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -58,6 +64,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
     setTitle(todo?.title ?? '');
     setDescription(todo?.description ?? '');
     setTitleError(null);
+    setDescriptionError(null);
   }, [todoId]);
 
   useEffect(() => {
@@ -96,17 +103,32 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
     setTitleError(null);
     if (titleTimer.current) clearTimeout(titleTimer.current);
     titleTimer.current = setTimeout(() => {
-      void updateTodo({ ...todo, title: result.data });
+      // Read the freshest todo so a concurrent immediate save (project, due,
+      // reminder, recurrence, tags) isn't clobbered by this stale closure.
+      const current = store.getState().todos.find((t) => t.id === todoId);
+      if (current) {
+        void updateTodo({ ...current, title: result.data });
+      }
     }, TITLE_SAVE_DEBOUNCE_MS);
   };
 
   const handleDescriptionChange = (next: string) => {
     setDescription(next);
     const result = descriptionSchema.safeParse(next);
-    if (!result.success) return;
+    if (!result.success) {
+      setDescriptionError(
+        result.error.issues[0]?.message ?? 'Description is too long',
+      );
+      if (descTimer.current) clearTimeout(descTimer.current);
+      return;
+    }
+    setDescriptionError(null);
     if (descTimer.current) clearTimeout(descTimer.current);
     descTimer.current = setTimeout(() => {
-      void updateTodo({ ...todo, description: result.data });
+      const current = store.getState().todos.find((t) => t.id === todoId);
+      if (current) {
+        void updateTodo({ ...current, description: result.data });
+      }
     }, TITLE_SAVE_DEBOUNCE_MS);
   };
 
@@ -164,8 +186,14 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           value={description}
           rows={4}
           aria-label="Description"
+          aria-invalid={descriptionError !== null}
           onChange={(e) => handleDescriptionChange(e.target.value)}
         />
+        {descriptionError !== null && (
+          <span className={styles.error} role="alert">
+            {descriptionError}
+          </span>
+        )}
       </label>
 
       <label className={styles.field}>
@@ -219,7 +247,12 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         <select
           value={todo.recurrence}
           aria-label="Repeat"
-          onChange={(e) => void setTodoRecurrence(todo.id, e.target.value as Recurrence)}
+          onChange={(e) => {
+            const parsed = recurrenceSchema.safeParse(e.target.value);
+            if (parsed.success) {
+              void setTodoRecurrence(todo.id, parsed.data);
+            }
+          }}
         >
           {RECURRENCE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
