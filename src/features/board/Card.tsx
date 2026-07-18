@@ -23,9 +23,10 @@ export interface CardProps {
   project: Project | null;
   subSteps: SubStep[];
   onToggleFrog: (id: string) => void;
+  onOpenTodo?: (id: string) => void;
 }
 
-export function Card({ todo, project, subSteps, onToggleFrog }: CardProps) {
+export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo }: CardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: todo.id });
   const [expanded, setExpanded] = useState(false);
@@ -92,7 +93,23 @@ export function Card({ todo, project, subSteps, onToggleFrog }: CardProps) {
         </button>
       </div>
 
-      <p className={styles.title}>{todo.title}</p>
+      <p className={styles.title}>
+        {onOpenTodo ? (
+          <button
+            type="button"
+            className={styles.titleButton}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenTodo(todo.id);
+            }}
+          >
+            {todo.title}
+          </button>
+        ) : (
+          todo.title
+        )}
+      </p>
 
       {todo.dueDate !== null && (
         <p className={overdue ? styles.dueOverdue : styles.due}>

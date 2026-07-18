@@ -28,9 +28,10 @@ function isStatus(value: string): value is Status {
 export interface BoardProps {
   /** Active project filter; null shows all projects. */
   filterProjectId: string | null;
+  onOpenTodo?: (id: string) => void;
 }
 
-export function Board({ filterProjectId }: BoardProps) {
+export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const store = getActiveStore();
   const allTodos = store((s) => s.todos);
   const projects = store((s) => s.projects);
@@ -149,6 +150,7 @@ export function Board({ filterProjectId }: BoardProps) {
             subStepsByTodo={subStepsByTodo}
             filterProjectId={filterProjectId}
             onToggleFrog={toggleFrog}
+            onOpenTodo={onOpenTodo}
           />
         ))}
       </div>

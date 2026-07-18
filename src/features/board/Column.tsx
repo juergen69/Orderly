@@ -17,6 +17,7 @@ export interface ColumnProps {
   /** Active project filter (null = all). New cards default to this project. */
   filterProjectId: string | null;
   onToggleFrog: (id: string) => void;
+  onOpenTodo?: (id: string) => void;
 }
 
 export function Column({
@@ -27,6 +28,7 @@ export function Column({
   subStepsByTodo,
   filterProjectId,
   onToggleFrog,
+  onOpenTodo,
 }: ColumnProps) {
   const store = getActiveStore();
   const createTodo = store((s) => s.createTodo);
@@ -76,6 +78,7 @@ export function Column({
                 project={todo.projectId ? projectById.get(todo.projectId) ?? null : null}
                 subSteps={subStepsByTodo.get(todo.id) ?? []}
                 onToggleFrog={onToggleFrog}
+                onOpenTodo={onOpenTodo}
               />
             ))}
           </ul>
