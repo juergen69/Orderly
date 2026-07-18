@@ -14,9 +14,11 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import type { Project, SubStep, Todo, Status } from '../../domain/types';
 import { selectTodosByStatus } from '../../store/selectors';
+import { filterRecurringVisible } from '../../domain/recurringVisibility';
 import { getActiveStore } from '../../store/storeInstance';
 import { BOARD_COLUMNS } from './boardMeta';
 import { Column } from './Column';
+import { RecurringFilter } from '../recurrence/RecurringFilter';
 import styles from './Board.module.css';
 
 const COLUMN_PREFIX = 'column:';
@@ -36,18 +38,18 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const allTodos = store((s) => s.todos);
   const projects = store((s) => s.projects);
   const subSteps = store((s) => s.subSteps);
+  const showAllRecurring = store((s) => s.ui.showAllRecurring);
   const moveTodo = store((s) => s.moveTodo);
   const toggleFrog = store((s) => s.toggleFrog);
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const filteredTodos = useMemo(
-    () =>
-      filterProjectId === null
-        ? allTodos
-        : allTodos.filter((t) => t.projectId === filterProjectId),
-    [allTodos, filterProjectId],
-  );
+  const filteredTodos = useMemo(() => {
+    const byRecurrence = filterRecurringVisible(allTodos, showAllRecurring);
+    return filterProjectId === null
+      ? byRecurrence
+      : byRecurrence.filter((t) => t.projectId === filterProjectId);
+  }, [allTodos, filterProjectId, showAllRecurring]);
 
   const todosByStatus = useMemo(() => {
     const map = new Map<Status, Todo[]>();
@@ -132,45 +134,50 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const activeTodo = activeId ? allTodos.find((t) => t.id === activeId) ?? null : null;
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={pointerWithin}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <div className={styles.board}>
-        {BOARD_COLUMNS.map((col) => (
-          <Column
-            key={col.status}
-            status={col.status}
-            title={col.title}
-            todos={todosByStatus.get(col.status) ?? []}
-            projects={projects}
-            subStepsByTodo={subStepsByTodo}
-            filterProjectId={filterProjectId}
-            onToggleFrog={toggleFrog}
-            onOpenTodo={onOpenTodo}
-          />
-        ))}
+    <div className={styles.boardWrapper}>
+      <div className={styles.toolbar}>
+        <RecurringFilter />
       </div>
-      <DragOverlay>
-        {activeTodo ? (
-          <div className={styles.overlayCard}>
-            <span
-              className={styles.overlayDot}
-              style={{
-                backgroundColor:
-                  activeTodo.projectId && projectById.get(activeTodo.projectId)
-                    ? projectById.get(activeTodo.projectId)!.color
-                    : 'var(--color-border)',
-              }}
-              aria-hidden="true"
+      <DndContext
+        sensors={sensors}
+        collisionDetection={pointerWithin}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <div className={styles.board}>
+          {BOARD_COLUMNS.map((col) => (
+            <Column
+              key={col.status}
+              status={col.status}
+              title={col.title}
+              todos={todosByStatus.get(col.status) ?? []}
+              projects={projects}
+              subStepsByTodo={subStepsByTodo}
+              filterProjectId={filterProjectId}
+              onToggleFrog={toggleFrog}
+              onOpenTodo={onOpenTodo}
             />
-            {activeTodo.title}
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+          ))}
+        </div>
+        <DragOverlay>
+          {activeTodo ? (
+            <div className={styles.overlayCard}>
+              <span
+                className={styles.overlayDot}
+                style={{
+                  backgroundColor:
+                    activeTodo.projectId && projectById.get(activeTodo.projectId)
+                      ? projectById.get(activeTodo.projectId)!.color
+                      : 'var(--color-border)',
+                }}
+                aria-hidden="true"
+              />
+              {activeTodo.title}
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+    </div>
   );
 }

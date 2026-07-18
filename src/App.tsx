@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TickerHost } from './features/TickerHost';
 import { ProjectsSidebar } from './features/projects/ProjectsSidebar';
 import { Board } from './features/board/Board';
+import { CalendarView } from './features/calendar/CalendarView';
 import { TodoDetail } from './features/todo-detail/TodoDetail';
 import { store } from './store/storeInstance';
 import styles from './App.module.css';
@@ -9,6 +10,8 @@ import styles from './App.module.css';
 function App() {
   const projects = store((s) => s.projects);
   const todos = store((s) => s.todos);
+  const activeView = store((s) => s.ui.activeView);
+  const setActiveView = store((s) => s.setActiveView);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [openTodoId, setOpenTodoId] = useState<string | null>(null);
 
@@ -28,6 +31,26 @@ function App() {
         <span className={styles.filterLabel}>
           {selectedProject === null ? 'All projects' : selectedProject.name}
         </span>
+        <div className={styles.viewSwitch} role="group" aria-label="View">
+          <button
+            type="button"
+            className={styles.viewButton}
+            aria-pressed={activeView === 'board'}
+            data-active={activeView === 'board' || undefined}
+            onClick={() => setActiveView('board')}
+          >
+            Board
+          </button>
+          <button
+            type="button"
+            className={styles.viewButton}
+            aria-pressed={activeView === 'calendar'}
+            data-active={activeView === 'calendar' || undefined}
+            onClick={() => setActiveView('calendar')}
+          >
+            Calendar
+          </button>
+        </div>
       </header>
 
       <div className={styles.body}>
@@ -37,9 +60,15 @@ function App() {
         />
 
         <main className={styles.main}>
-          <section className={styles.boardRegion} aria-label="Board" role="region">
-            <Board filterProjectId={selectedProjectId} onOpenTodo={setOpenTodoId} />
-          </section>
+          {activeView === 'board' ? (
+            <section className={styles.boardRegion} aria-label="Board" role="region">
+              <Board filterProjectId={selectedProjectId} onOpenTodo={setOpenTodoId} />
+            </section>
+          ) : (
+            <section className={styles.boardRegion} aria-label="Calendar" role="region">
+              <CalendarView onOpenTodo={setOpenTodoId} />
+            </section>
+          )}
         </main>
 
         {activeTodoId !== null && (
