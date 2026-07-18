@@ -69,7 +69,7 @@ export function groupByDueDate(todos: Todo[]): GroupedByDueDate {
   }
 
   for (const iso of Object.keys(grouped)) {
-    grouped[iso].sort((a, b) => {
+    (grouped[iso] ?? []).sort((a, b) => {
       if (a.boardOrder !== b.boardOrder) {
         return a.boardOrder < b.boardOrder ? -1 : 1;
       }

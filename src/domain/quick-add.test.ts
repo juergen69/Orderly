@@ -4,7 +4,7 @@ import { parseQuickAdd } from './quick-add';
 const projects = [
   { id: 'p1', name: 'Work', color: '#000', createdAt: '', updatedAt: '', order: 'a', boardOrder: 'a' },
   { id: 'p2', name: 'Personal', color: '#111', createdAt: '', updatedAt: '', order: 'b', boardOrder: 'b' },
-] as const;
+];
 
 const TODAY = '2025-01-15';
 

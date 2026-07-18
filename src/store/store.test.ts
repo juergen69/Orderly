@@ -47,7 +47,8 @@ describe('store actions', () => {
     const b = await store.getState().createProject('B', '#111111');
     const orderA = a.order;
     await store.getState().reorderProject(a.id, b.id, undefined);
-    expect(store.getState().projects.find((p) => p.id === a.id)?.order > orderA).toBe(true);
+    const reordered = store.getState().projects.find((p) => p.id === a.id);
+    expect(reordered && reordered.order > orderA).toBe(true);
   });
 
   it('creates a todo resolving its reminder from due date + lead', async () => {

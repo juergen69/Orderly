@@ -14,7 +14,7 @@ describe('monthGrid', () => {
   it('starts each week on a Monday', () => {
     const grid = monthGrid(2025, 5);
     for (const week of grid) {
-      expect(week[0].date.getDay()).toBe(1);
+      expect(week[0]!.date.getDay()).toBe(1);
     }
   });
 
@@ -36,7 +36,7 @@ describe('monthGrid', () => {
 
   it('handles a month that starts on a Monday with no leading spillover', () => {
     const grid = monthGrid(2025, 8);
-    const first = grid[0][0];
+    const first = grid[0][0]!;
     expect(first.date.getDate()).toBe(1);
     expect(first.inMonth).toBe(true);
   });
@@ -74,7 +74,7 @@ describe('groupByDueDate', () => {
       makeTodo({ id: '1', dueDate: '2025-06-15', boardOrder: 'a' }),
     ];
     const grouped = groupByDueDate(todos);
-    expect(grouped['2025-06-15'].map((t) => t.id)).toEqual(['1', '2']);
+    expect(grouped['2025-06-15']!.map((t) => t.id)).toEqual(['1', '2']);
   });
 
   it('falls back to createdAt when boardOrder is equal', () => {
@@ -83,7 +83,7 @@ describe('groupByDueDate', () => {
       makeTodo({ id: '1', dueDate: '2025-06-15', boardOrder: 'a', createdAt: '2025-01-01T00:00:00.000Z' }),
     ];
     const grouped = groupByDueDate(todos);
-    expect(grouped['2025-06-15'].map((t) => t.id)).toEqual(['1', '2']);
+    expect(grouped['2025-06-15']!.map((t) => t.id)).toEqual(['1', '2']);
   });
 
   it('excludes todos with null dueDate', () => {

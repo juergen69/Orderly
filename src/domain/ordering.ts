@@ -7,7 +7,7 @@ function charValue(c: string): number {
 }
 
 function valueChar(v: number): string {
-  return ALPHABET[v];
+  return ALPHABET[v] ?? 'a';
 }
 
 export function first(): string {
