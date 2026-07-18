@@ -30,10 +30,16 @@ export function selectTagFrequencies(todos: Todo[]): Array<{ tag: string; count:
       counts.set(tag, (counts.get(tag) ?? 0) + 1);
     }
   }
-  return sortTagsForSidebar([...counts.keys()]).map((tag) => ({
-    tag,
-    count: counts.get(tag) ?? 0,
-  }));
+  // Sort by frequency (desc), then alphabetically. `sortTagsForSidebar` dedupes
+  // and alpha-sorts the names but would lose the per-todo counts, so we apply
+  // the frequency ordering here against the real counts.
+  const sortedTags = sortTagsForSidebar([...counts.keys()]);
+  return sortedTags
+    .map((tag) => ({ tag, count: counts.get(tag) ?? 0 }))
+    .sort((a, b) => {
+      if (a.count !== b.count) return b.count - a.count;
+      return a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0;
+    });
 }
 
 export function selectTodoProgress(subSteps: SubStep[], todoId: string) {

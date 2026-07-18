@@ -5,6 +5,7 @@ import {
   formatDate,
   parseDate,
   startOfDay,
+  shiftDays,
   isBefore,
   isAfter,
   isSameDay,
@@ -173,5 +174,21 @@ describe('isAfterToday', () => {
   it('returns false for a past date', () => {
     const now = new Date(2025, 5, 15);
     expect(isAfterToday('2025-06-14', now)).toBe(false);
+  });
+});
+
+describe('shiftDays', () => {
+  it('adds days', () => {
+    expect(formatDate(shiftDays(new Date(2025, 5, 15), 5))).toBe('2025-06-20');
+  });
+
+  it('subtracts days and rolls months', () => {
+    expect(formatDate(shiftDays(new Date(2025, 2, 1), -1))).toBe('2025-02-28');
+  });
+
+  it('does not mutate the input', () => {
+    const input = new Date(2025, 5, 15);
+    shiftDays(input, 3);
+    expect(formatDate(input)).toBe('2025-06-15');
   });
 });

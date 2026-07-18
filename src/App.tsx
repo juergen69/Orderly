@@ -5,6 +5,8 @@ import { Board } from './features/board/Board';
 import { CalendarView } from './features/calendar/CalendarView';
 import { FocusPanel } from './features/focus-135/FocusPanel';
 import { FocusAreas } from './features/focus-areas/FocusAreas';
+import { SearchBar } from './features/search/SearchBar';
+import { TagsSidebar } from './features/tags/TagsSidebar';
 import { TodoDetail } from './features/todo-detail/TodoDetail';
 import { store } from './store/storeInstance';
 import styles from './App.module.css';
@@ -33,6 +35,7 @@ function App() {
         <span className={styles.filterLabel}>
           {selectedProject === null ? 'All projects' : selectedProject.name}
         </span>
+        <SearchBar />
         <div className={styles.viewSwitch} role="group" aria-label="View">
           <button
             type="button"
@@ -69,6 +72,8 @@ function App() {
           selectedProjectId={selectedProjectId}
           onSelect={setSelectedProjectId}
         />
+
+        <TagsSidebar />
 
         <main className={styles.main}>
           {activeView === 'board' ? (

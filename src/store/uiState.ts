@@ -13,6 +13,10 @@ export interface UiState {
   showAllRecurring: boolean;
   focusSlots: FocusSlot[];
   focusAreas: FocusArea[];
+  /** Transient header-search query (not persisted). */
+  searchQuery: string;
+  /** Transient tag-filter selection (not persisted). */
+  selectedTags: string[];
 }
 
 function defaultFocusSlots(): FocusSlot[] {
@@ -35,6 +39,8 @@ export function defaultUiState(): UiState {
     showAllRecurring: false,
     focusSlots: defaultFocusSlots(),
     focusAreas: defaultFocusAreas(),
+    searchQuery: '',
+    selectedTags: [],
   };
 }
 
@@ -106,6 +112,8 @@ export function loadUiState(): UiState {
           : false,
       focusSlots: sanitizeFocusSlots(parsed['focusSlots']),
       focusAreas: sanitizeFocusAreas(parsed['focusAreas']),
+      searchQuery: '',
+      selectedTags: [],
     };
   } catch {
     return defaultUiState();
@@ -124,6 +132,8 @@ export function saveUiState(state: UiState): void {
       focusSlots: state.focusSlots,
       focusAreas: state.focusAreas,
     };
+    // searchQuery and selectedTags are transient (session-only) and excluded
+    // from persistence.
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
     // private mode / quota exceeded: ignore, keep in-memory state only

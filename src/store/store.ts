@@ -56,6 +56,11 @@ export interface StoreState {
   setShowAllRecurring(value: boolean): void;
   setFocusSlot(index: number, todoId: string | null): void;
   setFocusArea(index: number, text: string): void;
+  setSearchQuery(query: string): void;
+  setSelectedTags(tags: string[]): void;
+  addTagFilter(tag: string): void;
+  removeTagFilter(tag: string): void;
+  clearTagFilters(): void;
 
   replaceAll(data: { projects: Project[]; todos: Todo[]; subSteps: SubStep[] }): Promise<void>;
   exportAll(): Promise<{ projects: Project[]; todos: Todo[]; subSteps: SubStep[] }>;
@@ -393,6 +398,35 @@ export function createStore(options: CreateStoreOptions) {
         saveUiState(ui);
         return { ui };
       });
+    },
+
+    setSearchQuery(query) {
+      // Transient: not persisted.
+      set((state) => ({ ui: { ...state.ui, searchQuery: query } }));
+    },
+
+    setSelectedTags(tags) {
+      set((state) => ({ ui: { ...state.ui, selectedTags: [...tags] } }));
+    },
+
+    addTagFilter(tag) {
+      set((state) => {
+        if (state.ui.selectedTags.includes(tag)) return {};
+        return { ui: { ...state.ui, selectedTags: [...state.ui.selectedTags, tag] } };
+      });
+    },
+
+    removeTagFilter(tag) {
+      set((state) => ({
+        ui: {
+          ...state.ui,
+          selectedTags: state.ui.selectedTags.filter((t) => t !== tag),
+        },
+      }));
+    },
+
+    clearTagFilters() {
+      set((state) => ({ ui: { ...state.ui, selectedTags: [] } }));
     },
 
     async replaceAll(data) {

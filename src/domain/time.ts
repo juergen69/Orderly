@@ -37,6 +37,12 @@ export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
+export function shiftDays(date: Date, days: number): Date {
+  const result = startOfDay(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
 export function isBefore(a: Date, b: Date): boolean {
   return a.getTime() < b.getTime();
 }

@@ -4,6 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { Project, SubStep, Todo, Status } from '../../domain/types';
 import { parseQuickAdd } from '../../domain/quick-add';
 import { todayIso } from '../../domain/time';
+import { selectArchivedSplit } from '../../store/selectors';
 import { getActiveStore } from '../../store/storeInstance';
 import { Card } from './Card';
 import styles from './Column.module.css';
@@ -34,8 +35,28 @@ export function Column({
   const createTodo = store((s) => s.createTodo);
   const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` });
   const [draft, setDraft] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
 
   const projectById = new Map(projects.map((p) => [p.id, p]));
+
+  // For the Done column, recent vs. archived split (archived = done ≥3 days ago).
+  const archivedSplit =
+    status === 'done' ? selectArchivedSplit(todos, todayIso()) : null;
+  const visibleTodos = archivedSplit
+    ? archivedSplit.recent
+    : todos;
+  const hiddenArchived = archivedSplit ? archivedSplit.archived : [];
+
+  const renderCard = (todo: Todo) => (
+    <Card
+      key={todo.id}
+      todo={todo}
+      project={todo.projectId ? projectById.get(todo.projectId) ?? null : null}
+      subSteps={subStepsByTodo.get(todo.id) ?? []}
+      onToggleFrog={onToggleFrog}
+      onOpenTodo={onOpenTodo}
+    />
+  );
 
   const handleAdd = async () => {
     const raw = draft.trim();
@@ -67,22 +88,37 @@ export function Column({
         data-over={isOver || undefined}
       >
         <SortableContext
-          items={todos.map((t) => t.id)}
+          items={visibleTodos.map((t) => t.id)}
           strategy={verticalListSortingStrategy}
         >
           <ul className={styles.list}>
-            {todos.map((todo) => (
-              <Card
-                key={todo.id}
-                todo={todo}
-                project={todo.projectId ? projectById.get(todo.projectId) ?? null : null}
-                subSteps={subStepsByTodo.get(todo.id) ?? []}
-                onToggleFrog={onToggleFrog}
-                onOpenTodo={onOpenTodo}
-              />
-            ))}
+            {visibleTodos.map(renderCard)}
           </ul>
         </SortableContext>
+
+        {hiddenArchived.length > 0 && (
+          <div className={styles.archiveToggle}>
+            <button
+              type="button"
+              className={styles.archiveButton}
+              aria-expanded={showArchived}
+              onClick={() => setShowArchived((v) => !v)}
+            >
+              {showArchived
+                ? 'Hide'
+                : `+ ${hiddenArchived.length} archived item${hiddenArchived.length === 1 ? '' : 's'}`}
+            </button>
+            {showArchived && (
+              <ul className={styles.archivedList} data-archived="true">
+                {hiddenArchived.map((todo) => (
+                  <li key={todo.id} className={styles.archivedItem}>
+                    {renderCard(todo)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       <div className={styles.addRow}>

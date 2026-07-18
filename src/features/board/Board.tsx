@@ -39,17 +39,29 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const projects = store((s) => s.projects);
   const subSteps = store((s) => s.subSteps);
   const showAllRecurring = store((s) => s.ui.showAllRecurring);
+  const searchQuery = store((s) => s.ui.searchQuery);
+  const selectedTags = store((s) => s.ui.selectedTags);
   const moveTodo = store((s) => s.moveTodo);
   const toggleFrog = store((s) => s.toggleFrog);
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const filteredTodos = useMemo(() => {
-    const byRecurrence = filterRecurringVisible(allTodos, showAllRecurring);
-    return filterProjectId === null
-      ? byRecurrence
-      : byRecurrence.filter((t) => t.projectId === filterProjectId);
-  }, [allTodos, filterProjectId, showAllRecurring]);
+    let result = filterRecurringVisible(allTodos, showAllRecurring);
+    if (filterProjectId !== null) {
+      result = result.filter((t) => t.projectId === filterProjectId);
+    }
+    const query = searchQuery.trim().toLowerCase();
+    if (query.length > 0) {
+      result = result.filter((t) =>
+        `${t.title} ${t.description}`.toLowerCase().includes(query),
+      );
+    }
+    if (selectedTags.length > 0) {
+      result = result.filter((t) => selectedTags.every((tag) => t.tags.includes(tag)));
+    }
+    return result;
+  }, [allTodos, filterProjectId, showAllRecurring, searchQuery, selectedTags]);
 
   const todosByStatus = useMemo(() => {
     const map = new Map<Status, Todo[]>();
