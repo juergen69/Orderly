@@ -246,6 +246,8 @@ export function createStore(options: CreateStoreOptions) {
         boardOrder,
         updatedAt: now,
         doneAt: status === 'done' ? (target.doneAt ?? now) : null,
+        // Frogs are cleared when the todo is completed (moved to done).
+        isFrog: status === 'done' ? false : target.isFrog,
       };
       await repository.updateTodo(updated);
       let nextTodos = todos.map((t) => (t.id === id ? updated : t));
