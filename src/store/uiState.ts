@@ -1,6 +1,6 @@
 import type { FocusArea, FocusSlot } from '../domain/types';
 
-export type ActiveView = 'board' | 'calendar';
+export type ActiveView = 'board' | 'calendar' | 'focus';
 
 const STORAGE_KEY = 'orderly.uiState';
 const SCHEMA_VERSION = 1;
@@ -82,7 +82,7 @@ function sanitizeFocusAreas(raw: unknown): FocusArea[] {
 }
 
 function sanitizeView(raw: unknown): ActiveView {
-  return raw === 'calendar' ? 'calendar' : 'board';
+  return raw === 'calendar' ? 'calendar' : raw === 'focus' ? 'focus' : 'board';
 }
 
 export function loadUiState(): UiState {
