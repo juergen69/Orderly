@@ -17,6 +17,8 @@ export interface UiState {
   searchQuery: string;
   /** Transient tag-filter selection (not persisted). */
   selectedTags: string[];
+  /** Transient sidebar project selection (not persisted). */
+  selectedProjectId: string | null;
 }
 
 function defaultFocusSlots(): FocusSlot[] {
@@ -41,6 +43,7 @@ export function defaultUiState(): UiState {
     focusAreas: defaultFocusAreas(),
     searchQuery: '',
     selectedTags: [],
+    selectedProjectId: null,
   };
 }
 
@@ -114,6 +117,7 @@ export function loadUiState(): UiState {
       focusAreas: sanitizeFocusAreas(parsed['focusAreas']),
       searchQuery: '',
       selectedTags: [],
+      selectedProjectId: null,
     };
   } catch {
     return defaultUiState();

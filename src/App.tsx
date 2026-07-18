@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TickerHost } from './features/TickerHost';
 import { ProjectsSidebar } from './features/projects/ProjectsSidebar';
 import { Board } from './features/board/Board';
@@ -7,6 +7,7 @@ import { FocusPanel } from './features/focus-135/FocusPanel';
 import { FocusAreas } from './features/focus-areas/FocusAreas';
 import { SearchBar } from './features/search/SearchBar';
 import { TagsSidebar } from './features/tags/TagsSidebar';
+import { CommandPalette } from './features/command-palette/CommandPalette';
 import { TodoDetail } from './features/todo-detail/TodoDetail';
 import { store } from './store/storeInstance';
 import styles from './App.module.css';
@@ -16,8 +17,22 @@ function App() {
   const todos = store((s) => s.todos);
   const activeView = store((s) => s.ui.activeView);
   const setActiveView = store((s) => s.setActiveView);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const selectedProjectId = store((s) => s.ui.selectedProjectId);
+  const setSelectedProjectId = store((s) => s.setSelectedProjectId);
   const [openTodoId, setOpenTodoId] = useState<string | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Cmd/Ctrl+K toggles the command palette.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const selectedProject =
     selectedProjectId === null
@@ -36,6 +51,15 @@ function App() {
           {selectedProject === null ? 'All projects' : selectedProject.name}
         </span>
         <SearchBar />
+        <button
+          type="button"
+          className={styles.paletteButton}
+          aria-label="Open command palette"
+          aria-keyshortcuts="Meta+K Control+K"
+          onClick={() => setPaletteOpen(true)}
+        >
+          ⌘K
+        </button>
         <div className={styles.viewSwitch} role="group" aria-label="View">
           <button
             type="button"
@@ -98,6 +122,8 @@ function App() {
       </div>
 
       <TickerHost />
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
   );
 }
