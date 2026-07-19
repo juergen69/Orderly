@@ -25,6 +25,17 @@ function App() {
   const [openTodoId, setOpenTodoId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
+  // Close mobile sidebar on Escape key.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [sidebarOpen, setSidebarOpen]);
+
   // Cmd/Ctrl+K toggles the command palette.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
