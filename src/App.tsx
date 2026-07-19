@@ -13,6 +13,19 @@ import { TodoDetail } from './features/todo-detail/TodoDetail';
 import { store } from './store/storeInstance';
 import styles from './App.module.css';
 
+const MOBILE_BREAKPOINT = 640;
+
+function isEditableElement(element: Element | null): boolean {
+  if (element === null) return false;
+  const tagName = element.tagName.toLowerCase();
+  return (
+    tagName === 'input' ||
+    tagName === 'textarea' ||
+    tagName === 'select' ||
+    element.getAttribute('contenteditable') === 'true'
+  );
+}
+
 function App() {
   const projects = store((s) => s.projects);
   const todos = store((s) => s.todos);
@@ -28,7 +41,10 @@ function App() {
   // Close mobile sidebar on Escape key (only on mobile and when not already handled).
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || !sidebarOpen || window.innerWidth > 640 || e.defaultPrevented) {
+      if (e.key !== 'Escape' || !sidebarOpen || window.innerWidth > MOBILE_BREAKPOINT || e.defaultPrevented) {
+        return;
+      }
+      if (isEditableElement(document.activeElement)) {
         return;
       }
       e.preventDefault();
@@ -44,7 +60,7 @@ function App() {
     const handler = () => {
       if (timeoutId !== null) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        if (sidebarOpen && window.innerWidth > 640) {
+        if (sidebarOpen && window.innerWidth > MOBILE_BREAKPOINT) {
           setSidebarOpen(false);
         }
       }, 150);
