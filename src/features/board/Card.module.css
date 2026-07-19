@@ -8,6 +8,8 @@
   border-inline-start: 3px solid var(--color-border);
   border-radius: var(--radius-md);
   list-style: none;
+  cursor: grab;
+  touch-action: pan-y;
 }
 
 .card[data-frog] {
@@ -19,8 +21,6 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--spacing-xs);
-  cursor: grab;
-  touch-action: none;
 }
 
 .meta {

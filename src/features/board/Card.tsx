@@ -63,8 +63,10 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
       }}
       className={styles.card}
       data-frog={todo.isFrog || undefined}
+      {...attributes}
+      {...listeners}
     >
-      <div className={styles.header} {...attributes} {...listeners}>
+      <div className={styles.header}>
         <div className={styles.meta}>
           {project && (
             <span className={styles.project}>
@@ -148,6 +150,7 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
           type="button"
           className={styles.progress}
           aria-expanded={expanded}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             setExpanded((v) => !v);
