@@ -102,7 +102,8 @@ production build output (the `dist` directory). To build and publish:
    git checkout deploy
    git rm -rf .
    cp -r dist/* .
-   git add .
+   rm -rf dist
+   git add index.html assets/
    git commit -m "deploy: build from main $(git rev-parse --short main)"
    git push origin deploy
    git checkout main

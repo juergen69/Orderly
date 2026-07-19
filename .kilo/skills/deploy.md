@@ -31,7 +31,8 @@ Build the production bundle and publish it to the `deploy` branch, which contain
    git checkout deploy
    git rm -rf .
    cp -r dist/* .
-   git add .
+   rm -rf dist
+   git add index.html assets/
    git commit -m "deploy: build from main $(git rev-parse --short main)"
    git push origin deploy
    git checkout main
