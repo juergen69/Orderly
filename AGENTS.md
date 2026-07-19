@@ -81,6 +81,38 @@ and posts its findings as **PR review comments** plus an issue-comment summary
   is done directly in the main session. The file `AGENTS.md` (not `agents.md`)
   is the workflow spec for this project.
 
+## Deployment
+
+This project is deployed from a separate `deploy` branch that contains only the
+production build output (the `dist` directory). To build and publish:
+
+1. Ensure you are on `main` and it is up to date:
+   ```
+   git checkout main
+   git pull origin main
+   ```
+
+2. Build the production bundle:
+   ```
+   npm run build
+   ```
+
+3. Update the `deploy` branch with the contents of `dist`:
+   ```
+   git checkout deploy
+   git rm -rf .
+   cp -r dist/* .
+   git add .
+   git commit -m "deploy: build from main $(git rev-parse --short main)"
+   git push origin deploy
+   git checkout main
+   ```
+
+4. Verify the deploy branch on GitHub contains `index.html` and the `assets/`
+   directory.
+
+For future deployments, use the `deploy` skill: `load skill deploy`.
+
 ## Coding Rules
 
 The following rules are derived from recurring kilo-code-bot review findings across all PRs. Follow them to avoid repetitive fixes.
