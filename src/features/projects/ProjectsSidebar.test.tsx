@@ -162,7 +162,7 @@ describe('ProjectsSidebar', () => {
   });
 
   it('closes drawer when a project is selected in drawer mode', async () => {
-    const p = await store.getState().createProject('Work', '#22d3ee');
+    await store.getState().createProject('Work', '#22d3ee');
     const on_close = vi.fn();
 
     render(<Harness />);

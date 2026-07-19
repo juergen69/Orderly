@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Project } from '../../domain/types';
 import { colorSchema, projectNameSchema } from '../../domain/validation';
 import { DEFAULT_COLOR } from '../../domain/colors';
@@ -22,29 +22,36 @@ interface DraftState {
 }
 
 export interface ProjectsSidebarProps {
-   /** Currently selected project filter (`null` = all projects). Transient. */
-   selectedProjectId: string | null;
-   onSelect: (projectId: string | null) => void;
-   /** Mobile drawer mode - shows overlay backdrop and close button. */
-   drawer?: boolean;
-   /** Callback to close the drawer (mobile only). */
-   onClose?: () => void;
- }
+  /** Currently selected project filter (`null` = all projects). Transient. */
+  selectedProjectId: string | null;
+  onSelect: (projectId: string | null) => void;
+  /** Mobile drawer mode - shows overlay backdrop and close button. */
+  drawer?: boolean;
+  /** Callback to close the drawer (mobile only). */
+  onClose?: () => void;
+}
 
 export function ProjectsSidebar({ selectedProjectId, onSelect, drawer, onClose }: ProjectsSidebarProps) {
-   const store = getActiveStore();
-   const projects = store((s) => s.projects);
-   const createProject = store((s) => s.createProject);
-   const updateProject = store((s) => s.updateProject);
-   const deleteProject = store((s) => s.deleteProject);
+  const store = getActiveStore();
+  const projects = store((s) => s.projects);
+  const createProject = store((s) => s.createProject);
+  const updateProject = store((s) => s.updateProject);
+  const deleteProject = store((s) => s.deleteProject);
 
-   const sorted = useMemo(() => sortByName(projects), [projects]);
+  const sorted = useMemo(() => sortByName(projects), [projects]);
 
-   const [draft, setDraft] = useState<DraftState | null>(null);
-   const [error, setError] = useState<string | null>(null);
-   const [deleting, setDeleting] = useState<Project | null>(null);
+  const [draft, setDraft] = useState<DraftState | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<Project | null>(null);
+  const drawerRef = useRef<HTMLElement>(null);
 
-const openCreate = () => {
+  useEffect(() => {
+    if (drawer && drawerRef.current) {
+      drawerRef.current.focus();
+    }
+  }, [drawer]);
+
+  const openCreate = () => {
     setError(null);
     setDraft({ mode: 'create', id: null, name: '', color: DEFAULT_COLOR });
   };
@@ -93,9 +100,13 @@ const openCreate = () => {
 
   return (
     <nav
+      ref={drawerRef}
       className={styles.sidebar}
       aria-label="Projects"
       data-drawer-open={drawer || undefined}
+      role={drawer ? 'dialog' : undefined}
+      aria-modal={drawer ? 'true' : undefined}
+      tabIndex={drawer ? -1 : undefined}
     >
       <div className={styles.header}>
         <h2 className={styles.heading}>Projects</h2>
@@ -103,7 +114,7 @@ const openCreate = () => {
           <button
             type="button"
             className={styles.closeButton}
-            onClick={onClose}
+            onClick={() => onClose?.()}
             aria-label="Close projects"
           >
             ×
