@@ -25,26 +25,35 @@ function App() {
   const [openTodoId, setOpenTodoId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Close mobile sidebar on Escape key (only on mobile).
+  // Close mobile sidebar on Escape key (only on mobile and when not already handled).
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && sidebarOpen && window.innerWidth <= 640) {
-        setSidebarOpen(false);
+      if (e.key !== 'Escape' || !sidebarOpen || window.innerWidth > 640 || e.defaultPrevented) {
+        return;
       }
+      e.preventDefault();
+      setSidebarOpen(false);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [sidebarOpen, setSidebarOpen]);
 
-  // Close sidebar when window is resized above mobile breakpoint.
+  // Close sidebar when window is resized above mobile breakpoint (debounced).
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const handler = () => {
-      if (sidebarOpen && window.innerWidth > 640) {
-        setSidebarOpen(false);
-      }
+      if (timeoutId !== null) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (sidebarOpen && window.innerWidth > 640) {
+          setSidebarOpen(false);
+        }
+      }, 150);
     };
     window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
+    return () => {
+      window.removeEventListener('resize', handler);
+      if (timeoutId !== null) clearTimeout(timeoutId);
+    };
   }, [sidebarOpen, setSidebarOpen]);
 
   // Cmd/Ctrl+K toggles the command palette.
