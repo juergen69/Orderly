@@ -71,7 +71,7 @@ export function buildCommands(store = getActiveStore()): Command[] {
     hint: 'Create',
     keywords: 'new todo add create',
     run: () => {
-      void store.getState().createTodo({ projectId: state.ui.selectedProjectId, title: '' });
+      void store.getState().createTodo({ projectId: state.ui.selectedProjectId, title: 'New todo' });
     },
   });
 
