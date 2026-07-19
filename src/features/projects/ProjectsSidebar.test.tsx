@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { useState } from 'react';
 import { render, screen, within, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -159,5 +159,30 @@ describe('ProjectsSidebar', () => {
     expect(state.projects).toHaveLength(0);
     expect(state.todos).toHaveLength(1);
     expect(state.todos[0]!.projectId).toBeNull();
+  });
+
+  it('closes drawer when a project is selected in drawer mode', async () => {
+    await store.getState().createProject('Work', '#22d3ee');
+    const on_close = vi.fn();
+
+    render(<Harness />);
+
+    const drawer = screen.getByLabelText('Projects');
+    expect(drawer).not.toHaveAttribute('data-drawer-open');
+
+    // Re-render with drawer prop
+    cleanup();
+    render(
+      <ProjectsSidebar
+        selectedProjectId={null}
+        onSelect={() => {}}
+        drawer
+        onClose={on_close}
+      />,
+    );
+
+    expect(screen.getByLabelText('Projects')).toHaveAttribute('data-drawer-open');
+    await userEvent.click(screen.getByRole('button', { name: 'Work' }));
+    expect(on_close).toHaveBeenCalled();
   });
 });

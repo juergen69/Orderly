@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Project } from '../../domain/types';
 import { colorSchema, projectNameSchema } from '../../domain/validation';
 import { DEFAULT_COLOR } from '../../domain/colors';
@@ -25,9 +25,13 @@ export interface ProjectsSidebarProps {
   /** Currently selected project filter (`null` = all projects). Transient. */
   selectedProjectId: string | null;
   onSelect: (projectId: string | null) => void;
+  /** Mobile drawer mode - shows overlay backdrop and close button. */
+  drawer?: boolean;
+  /** Callback to close the drawer (mobile only). */
+  onClose?: () => void;
 }
 
-export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebarProps) {
+export function ProjectsSidebar({ selectedProjectId, onSelect, drawer, onClose }: ProjectsSidebarProps) {
   const store = getActiveStore();
   const projects = store((s) => s.projects);
   const createProject = store((s) => s.createProject);
@@ -39,6 +43,13 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
   const [draft, setDraft] = useState<DraftState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Project | null>(null);
+  const drawerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (drawer && drawerRef.current) {
+      drawerRef.current.focus();
+    }
+  }, [drawer]);
 
   const openCreate = () => {
     setError(null);
@@ -80,10 +91,35 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
     closeDraft();
   };
 
+  const handleSelect = (projectId: string | null) => {
+    onSelect(projectId);
+    if (drawer && onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <nav className={styles.sidebar} aria-label="Projects">
+    <nav
+      ref={drawerRef}
+      className={styles.sidebar}
+      aria-label="Projects"
+      data-drawer-open={drawer || undefined}
+      role={drawer ? 'dialog' : undefined}
+      aria-modal={drawer ? 'true' : undefined}
+      tabIndex={drawer ? -1 : undefined}
+    >
       <div className={styles.header}>
         <h2 className={styles.heading}>Projects</h2>
+        {drawer && (
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={() => onClose?.()}
+            aria-label="Close projects"
+          >
+            ×
+          </button>
+        )}
         <button
           type="button"
           className={styles.newButton}
@@ -101,7 +137,7 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
             className={styles.projectRow}
             aria-current={selectedProjectId === ALL_PROJECTS ? 'true' : undefined}
             data-selected={selectedProjectId === ALL_PROJECTS || undefined}
-            onClick={() => onSelect(ALL_PROJECTS)}
+            onClick={() => handleSelect(ALL_PROJECTS)}
           >
             <span className={styles.allDot} aria-hidden="true" />
             <span className={styles.projectName}>All projects</span>
@@ -115,7 +151,7 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
               className={styles.projectRow}
               aria-current={selectedProjectId === project.id ? 'true' : undefined}
               data-selected={selectedProjectId === project.id || undefined}
-              onClick={() => onSelect(project.id)}
+              onClick={() => handleSelect(project.id)}
             >
               <span
                 className={styles.dot}
@@ -197,7 +233,7 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
           onConfirm={async (options) => {
             await deleteProject(deleting.id, options);
             if (selectedProjectId === deleting.id) {
-              onSelect(ALL_PROJECTS);
+              handleSelect(ALL_PROJECTS);
             }
             setDeleting(null);
           }}

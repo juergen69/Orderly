@@ -62,6 +62,7 @@ export interface StoreState {
   removeTagFilter(tag: string): void;
   clearTagFilters(): void;
   setSelectedProjectId(projectId: string | null): void;
+  setSidebarOpen(open: boolean): void;
 
   replaceAll(data: { projects: Project[]; todos: Todo[]; subSteps: SubStep[] }): Promise<void>;
   exportAll(): Promise<{ projects: Project[]; todos: Todo[]; subSteps: SubStep[] }>;
@@ -441,6 +442,10 @@ export function createStore(options: CreateStoreOptions) {
 
     setSelectedProjectId(projectId) {
       set((state) => ({ ui: { ...state.ui, selectedProjectId: projectId } }));
+    },
+
+    setSidebarOpen(open: boolean) {
+      set((state) => ({ ui: { ...state.ui, sidebarOpen: open } }));
     },
 
     async replaceAll(data) {

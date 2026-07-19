@@ -13,6 +13,19 @@ import { TodoDetail } from './features/todo-detail/TodoDetail';
 import { store } from './store/storeInstance';
 import styles from './App.module.css';
 
+const MOBILE_BREAKPOINT = 640;
+
+function isEditableElement(element: Element | null): boolean {
+  if (element === null) return false;
+  const tagName = element.tagName.toLowerCase();
+  return (
+    tagName === 'input' ||
+    tagName === 'textarea' ||
+    tagName === 'select' ||
+    element.getAttribute('contenteditable') === 'true'
+  );
+}
+
 function App() {
   const projects = store((s) => s.projects);
   const todos = store((s) => s.todos);
@@ -20,8 +33,44 @@ function App() {
   const setActiveView = store((s) => s.setActiveView);
   const selectedProjectId = store((s) => s.ui.selectedProjectId);
   const setSelectedProjectId = store((s) => s.setSelectedProjectId);
+  const sidebarOpen = store((s) => s.ui.sidebarOpen);
+  const setSidebarOpen = store((s) => s.setSidebarOpen);
   const [openTodoId, setOpenTodoId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Close mobile sidebar on Escape key (only on mobile and when not already handled).
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !sidebarOpen || window.innerWidth > MOBILE_BREAKPOINT || e.defaultPrevented) {
+        return;
+      }
+      if (isEditableElement(document.activeElement)) {
+        return;
+      }
+      e.preventDefault();
+      setSidebarOpen(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [sidebarOpen, setSidebarOpen]);
+
+  // Close sidebar when window is resized above mobile breakpoint (debounced).
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const handler = () => {
+      if (timeoutId !== null) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (sidebarOpen && window.innerWidth > MOBILE_BREAKPOINT) {
+          setSidebarOpen(false);
+        }
+      }, 150);
+    };
+    window.addEventListener('resize', handler);
+    return () => {
+      window.removeEventListener('resize', handler);
+      if (timeoutId !== null) clearTimeout(timeoutId);
+    };
+  }, [sidebarOpen, setSidebarOpen]);
 
   // Cmd/Ctrl+K toggles the command palette.
   useEffect(() => {
@@ -48,6 +97,14 @@ function App() {
     <div className={styles.shell}>
       <header className={styles.banner} role="banner">
         <h1 className={styles.title}>Orderly</h1>
+        <button
+          type="button"
+          className={styles.menuButton}
+          aria-label="Open projects"
+          onClick={() => setSidebarOpen(true)}
+        >
+          ☰
+        </button>
         <span className={styles.filterLabel}>
           {selectedProject === null ? 'All projects' : selectedProject.name}
         </span>
@@ -99,6 +156,15 @@ function App() {
           onSelect={setSelectedProjectId}
         />
 
+        {sidebarOpen && (
+          <ProjectsSidebar
+            selectedProjectId={selectedProjectId}
+            onSelect={setSelectedProjectId}
+            drawer
+            onClose={() => setSidebarOpen(false)}
+          />
+        )}
+
         <TagsSidebar />
 
         <main className={styles.main}>
@@ -122,6 +188,8 @@ function App() {
           <TodoDetail todoId={activeTodoId} onClose={() => setOpenTodoId(null)} />
         )}
       </div>
+
+      {sidebarOpen && <div className={styles.backdrop} data-visible onClick={() => setSidebarOpen(false)} />}
 
       <TickerHost />
 

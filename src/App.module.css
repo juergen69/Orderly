@@ -77,3 +77,31 @@
   height: 100%;
   min-height: 0;
 }
+
+.menuButton {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+}
+
+@media (min-width: 641px) {
+  .menuButton {
+    display: none;
+  }
+}
+
+.backdrop {
+  display: none;
+}
+
+.backdrop[data-visible] {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 0.6);
+  z-index: 990;
+}
