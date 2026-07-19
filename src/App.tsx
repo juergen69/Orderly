@@ -25,15 +25,26 @@ function App() {
   const [openTodoId, setOpenTodoId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Close mobile sidebar on Escape key.
+  // Close mobile sidebar on Escape key (only on mobile).
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && sidebarOpen) {
+      if (e.key === 'Escape' && sidebarOpen && window.innerWidth <= 640) {
         setSidebarOpen(false);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
+  }, [sidebarOpen, setSidebarOpen]);
+
+  // Close sidebar when window is resized above mobile breakpoint.
+  useEffect(() => {
+    const handler = () => {
+      if (sidebarOpen && window.innerWidth > 640) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
   }, [sidebarOpen, setSidebarOpen]);
 
   // Cmd/Ctrl+K toggles the command palette.
