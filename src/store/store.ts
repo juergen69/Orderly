@@ -57,13 +57,14 @@ export interface StoreState {
   setFocusSlot(index: number, todoId: string | null): void;
   setFocusArea(index: number, text: string): void;
   setSearchQuery(query: string): void;
-  setSelectedTags(tags: string[]): void;
-  addTagFilter(tag: string): void;
-  removeTagFilter(tag: string): void;
-  clearTagFilters(): void;
-  setSelectedProjectId(projectId: string | null): void;
+setSelectedTags(tags: string[]): void;
+   addTagFilter(tag: string): void;
+   removeTagFilter(tag: string): void;
+   clearTagFilters(): void;
+   setSelectedProjectId(projectId: string | null): void;
+   setSidebarOpen(open: boolean): void;
 
-  replaceAll(data: { projects: Project[]; todos: Todo[]; subSteps: SubStep[] }): Promise<void>;
+   replaceAll(data: { projects: Project[]; todos: Todo[]; subSteps: SubStep[] }): Promise<void>;
   exportAll(): Promise<{ projects: Project[]; todos: Todo[]; subSteps: SubStep[] }>;
 }
 
@@ -435,12 +436,16 @@ export function createStore(options: CreateStoreOptions) {
       }));
     },
 
-    clearTagFilters() {
+clearTagFilters() {
       set((state) => ({ ui: { ...state.ui, selectedTags: [] } }));
     },
 
     setSelectedProjectId(projectId) {
       set((state) => ({ ui: { ...state.ui, selectedProjectId: projectId } }));
+    },
+
+    setSidebarOpen(open: boolean) {
+      set((state) => ({ ui: { ...state.ui, sidebarOpen: open } }));
     },
 
     async replaceAll(data) {

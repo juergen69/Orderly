@@ -4,6 +4,12 @@
   gap: var(--spacing-xs);
 }
 
+@media (max-width: 640px) {
+  .section {
+    display: none;
+  }
+}
+
 .header {
   display: flex;
   align-items: center;

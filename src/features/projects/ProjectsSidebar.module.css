@@ -11,6 +11,23 @@
   color: var(--color-text-primary);
 }
 
+@media (max-width: 640px) {
+  .sidebar:not([data-drawer-open]) {
+    display: none;
+  }
+}
+
+.sidebar[data-drawer-open] {
+  display: flex;
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 18rem;
+  max-width: 80vw;
+  height: 100vh;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -177,4 +194,17 @@
   margin: 0;
   color: var(--color-error);
   font-size: var(--font-size-xs);
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  line-height: 1;
 }

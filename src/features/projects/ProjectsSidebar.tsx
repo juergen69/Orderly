@@ -22,25 +22,29 @@ interface DraftState {
 }
 
 export interface ProjectsSidebarProps {
-  /** Currently selected project filter (`null` = all projects). Transient. */
-  selectedProjectId: string | null;
-  onSelect: (projectId: string | null) => void;
-}
+   /** Currently selected project filter (`null` = all projects). Transient. */
+   selectedProjectId: string | null;
+   onSelect: (projectId: string | null) => void;
+   /** Mobile drawer mode - shows overlay backdrop and close button. */
+   drawer?: boolean;
+   /** Callback to close the drawer (mobile only). */
+   onClose?: () => void;
+ }
 
-export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebarProps) {
-  const store = getActiveStore();
-  const projects = store((s) => s.projects);
-  const createProject = store((s) => s.createProject);
-  const updateProject = store((s) => s.updateProject);
-  const deleteProject = store((s) => s.deleteProject);
+export function ProjectsSidebar({ selectedProjectId, onSelect, drawer, onClose }: ProjectsSidebarProps) {
+   const store = getActiveStore();
+   const projects = store((s) => s.projects);
+   const createProject = store((s) => s.createProject);
+   const updateProject = store((s) => s.updateProject);
+   const deleteProject = store((s) => s.deleteProject);
 
-  const sorted = useMemo(() => sortByName(projects), [projects]);
+   const sorted = useMemo(() => sortByName(projects), [projects]);
 
-  const [draft, setDraft] = useState<DraftState | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<Project | null>(null);
+   const [draft, setDraft] = useState<DraftState | null>(null);
+   const [error, setError] = useState<string | null>(null);
+   const [deleting, setDeleting] = useState<Project | null>(null);
 
-  const openCreate = () => {
+const openCreate = () => {
     setError(null);
     setDraft({ mode: 'create', id: null, name: '', color: DEFAULT_COLOR });
   };
@@ -80,10 +84,31 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
     closeDraft();
   };
 
+  const handleSelect = (projectId: string | null) => {
+    onSelect(projectId);
+    if (drawer && onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <nav className={styles.sidebar} aria-label="Projects">
+    <nav
+      className={styles.sidebar}
+      aria-label="Projects"
+      data-drawer-open={drawer || undefined}
+    >
       <div className={styles.header}>
         <h2 className={styles.heading}>Projects</h2>
+        {drawer && (
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={onClose}
+            aria-label="Close projects"
+          >
+            ×
+          </button>
+        )}
         <button
           type="button"
           className={styles.newButton}
@@ -101,7 +126,7 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
             className={styles.projectRow}
             aria-current={selectedProjectId === ALL_PROJECTS ? 'true' : undefined}
             data-selected={selectedProjectId === ALL_PROJECTS || undefined}
-            onClick={() => onSelect(ALL_PROJECTS)}
+            onClick={() => handleSelect(ALL_PROJECTS)}
           >
             <span className={styles.allDot} aria-hidden="true" />
             <span className={styles.projectName}>All projects</span>
@@ -115,7 +140,7 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
               className={styles.projectRow}
               aria-current={selectedProjectId === project.id ? 'true' : undefined}
               data-selected={selectedProjectId === project.id || undefined}
-              onClick={() => onSelect(project.id)}
+              onClick={() => handleSelect(project.id)}
             >
               <span
                 className={styles.dot}
@@ -197,7 +222,7 @@ export function ProjectsSidebar({ selectedProjectId, onSelect }: ProjectsSidebar
           onConfirm={async (options) => {
             await deleteProject(deleting.id, options);
             if (selectedProjectId === deleting.id) {
-              onSelect(ALL_PROJECTS);
+              handleSelect(ALL_PROJECTS);
             }
             setDeleting(null);
           }}

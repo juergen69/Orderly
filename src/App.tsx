@@ -20,6 +20,8 @@ function App() {
   const setActiveView = store((s) => s.setActiveView);
   const selectedProjectId = store((s) => s.ui.selectedProjectId);
   const setSelectedProjectId = store((s) => s.setSelectedProjectId);
+  const sidebarOpen = store((s) => s.ui.sidebarOpen);
+  const setSidebarOpen = store((s) => s.setSidebarOpen);
   const [openTodoId, setOpenTodoId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
@@ -48,6 +50,14 @@ function App() {
     <div className={styles.shell}>
       <header className={styles.banner} role="banner">
         <h1 className={styles.title}>Orderly</h1>
+        <button
+          type="button"
+          className={styles.menuButton}
+          aria-label="Open projects"
+          onClick={() => setSidebarOpen(true)}
+        >
+          ☰
+        </button>
         <span className={styles.filterLabel}>
           {selectedProject === null ? 'All projects' : selectedProject.name}
         </span>
@@ -99,6 +109,15 @@ function App() {
           onSelect={setSelectedProjectId}
         />
 
+        {sidebarOpen && (
+          <ProjectsSidebar
+            selectedProjectId={selectedProjectId}
+            onSelect={setSelectedProjectId}
+            drawer
+            onClose={() => setSidebarOpen(false)}
+          />
+        )}
+
         <TagsSidebar />
 
         <main className={styles.main}>
@@ -122,6 +141,8 @@ function App() {
           <TodoDetail todoId={activeTodoId} onClose={() => setOpenTodoId(null)} />
         )}
       </div>
+
+      {sidebarOpen && <div className={styles.backdrop} data-visible onClick={() => setSidebarOpen(false)} />}
 
       <TickerHost />
 
