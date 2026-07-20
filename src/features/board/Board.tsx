@@ -59,6 +59,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const [composerStatus, setComposerStatus] = useState<Status>('todo');
   const [composerDraft, setComposerDraft] = useState('');
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   const filteredTodos = useMemo(() => {
     let result = filterRecurringVisible(allTodos, showAllRecurring);
@@ -180,6 +181,23 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
       if (key === 'escape' && composerOpen) {
         event.preventDefault();
         setComposerOpen(false);
+        return;
+      }
+      if (key === 'tab' && composerOpen && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0]!;
+        const last = focusable[focusable.length - 1]!;
+        const current = document.activeElement;
+        if (event.shiftKey && current === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && current === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener('keydown', handler);
@@ -263,6 +281,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
           onClick={() => setComposerOpen(false)}
         >
           <div
+            ref={dialogRef}
             className={styles.sheet}
             role="dialog"
             aria-modal="true"
