@@ -372,6 +372,8 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
             try {
               await deleteTodo(todo.id);
               onClose();
+            } catch {
+              // delete failed; keep panel open so the user can retry
             } finally {
               if (mountedRef.current) setConfirmingDelete(false);
             }
