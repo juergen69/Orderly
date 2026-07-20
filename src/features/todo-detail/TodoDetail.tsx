@@ -88,6 +88,14 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
       .slice(0, 6);
   }, [tagDraft, existingTags, todo?.tags]);
 
+  // Move focus into the dialog on open and return it to the trigger on close.
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+    return () => previouslyFocused?.focus?.();
+  }, []);
+
   if (!todo) {
     return null;
   }
@@ -151,18 +159,32 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   };
 
   return (
-    <aside className={styles.panel} role="complementary" aria-label="Todo details">
-      <div className={styles.headerRow}>
-        <h2 className={styles.heading}>Details</h2>
-        <button
-          type="button"
-          className={styles.close}
-          aria-label="Close details"
-          onClick={onClose}
-        >
-          ×
-        </button>
-      </div>
+    <div className={styles.overlay} role="presentation">
+      <div
+        ref={dialogRef}
+        className={styles.panel}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Todo details"
+        tabIndex={-1}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            onClose();
+          }
+        }}
+      >
+        <div className={styles.headerRow}>
+          <h2 className={styles.heading}>Details</h2>
+          <button
+            type="button"
+            className={styles.close}
+            aria-label="Close details"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
 
       <label className={styles.field}>
         <span>Title</span>
@@ -314,6 +336,13 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           </ul>
         )}
       </div>
-    </aside>
+
+      <div className={styles.footer}>
+        <button type="button" className={styles.done} onClick={onClose}>
+          Done
+        </button>
+      </div>
+      </div>
+    </div>
   );
 }
