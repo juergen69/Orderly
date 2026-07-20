@@ -163,197 +163,199 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   };
 
   return (
-    <div className={styles.overlay} role="presentation">
-      <div
-        ref={dialogRef}
-        className={styles.panel}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Todo details"
-        tabIndex={-1}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') {
-            e.preventDefault();
-            onClose();
-          }
-        }}
-      >
-        <div className={styles.headerRow}>
-          <h2 className={styles.heading}>Details</h2>
-          <button
-            type="button"
-            className={styles.close}
-            aria-label="Close details"
-            onClick={onClose}
+    <>
+      <div className={styles.overlay} role="presentation">
+        <div
+          ref={dialogRef}
+          className={styles.panel}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Todo details"
+          tabIndex={-1}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              onClose();
+            }
+          }}
+        >
+          <div className={styles.headerRow}>
+            <h2 className={styles.heading}>Details</h2>
+            <button
+              type="button"
+              className={styles.close}
+              aria-label="Close details"
+              onClick={onClose}
+            >
+              ×
+            </button>
+          </div>
+
+        <label className={styles.field}>
+          <span>Title</span>
+          <input
+            type="text"
+            value={title}
+            aria-label="Title"
+            aria-invalid={titleError !== null}
+            onChange={(e) => handleTitleChange(e.target.value)}
+          />
+          {titleError !== null && (
+            <span className={styles.error} role="alert">
+              {titleError}
+            </span>
+          )}
+        </label>
+
+        <label className={styles.field}>
+          <span>Description</span>
+          <textarea
+            value={description}
+            rows={4}
+            aria-label="Description"
+            aria-invalid={descriptionError !== null}
+            onChange={(e) => handleDescriptionChange(e.target.value)}
+          />
+          {descriptionError !== null && (
+            <span className={styles.error} role="alert">
+              {descriptionError}
+            </span>
+          )}
+        </label>
+
+        <label className={styles.field}>
+          <span>Project</span>
+          <select
+            value={todo.projectId ?? ''}
+            aria-label="Project"
+            onChange={(e) =>
+              void updateTodo({
+                ...todo,
+                projectId: e.target.value === '' ? null : e.target.value,
+              })
+            }
           >
-            ×
-          </button>
+            <option value="">No project</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className={styles.field}>
+          <span>Due date</span>
+          <DatePicker
+            value={todo.dueDate}
+            onChange={(iso) => void setTodoDueDate(todo.id, iso)}
+          />
         </div>
 
-      <label className={styles.field}>
-        <span>Title</span>
-        <input
-          type="text"
-          value={title}
-          aria-label="Title"
-          aria-invalid={titleError !== null}
-          onChange={(e) => handleTitleChange(e.target.value)}
-        />
-        {titleError !== null && (
-          <span className={styles.error} role="alert">
-            {titleError}
-          </span>
-        )}
-      </label>
-
-      <label className={styles.field}>
-        <span>Description</span>
-        <textarea
-          value={description}
-          rows={4}
-          aria-label="Description"
-          aria-invalid={descriptionError !== null}
-          onChange={(e) => handleDescriptionChange(e.target.value)}
-        />
-        {descriptionError !== null && (
-          <span className={styles.error} role="alert">
-            {descriptionError}
-          </span>
-        )}
-      </label>
-
-      <label className={styles.field}>
-        <span>Project</span>
-        <select
-          value={todo.projectId ?? ''}
-          aria-label="Project"
-          onChange={(e) =>
-            void updateTodo({
-              ...todo,
-              projectId: e.target.value === '' ? null : e.target.value,
-            })
-          }
-        >
-          <option value="">No project</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <div className={styles.field}>
-        <span>Due date</span>
-        <DatePicker
-          value={todo.dueDate}
-          onChange={(iso) => void setTodoDueDate(todo.id, iso)}
-        />
-      </div>
-
-      <label className={styles.field}>
-        <span>Reminder</span>
-        <select
-          value={todo.reminderLead ?? ''}
-          aria-label="Reminder"
-          onChange={(e) =>
-            void setTodoReminder(todo.id, e.target.value === '' ? null : e.target.value)
-          }
-        >
-          {REMINDER_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className={styles.field}>
-        <span>Repeat</span>
-        <select
-          value={todo.recurrence}
-          aria-label="Repeat"
-          onChange={(e) => {
-            const parsed = recurrenceSchema.safeParse(e.target.value);
-            if (parsed.success) {
-              void setTodoRecurrence(todo.id, parsed.data);
+        <label className={styles.field}>
+          <span>Reminder</span>
+          <select
+            value={todo.reminderLead ?? ''}
+            aria-label="Reminder"
+            onChange={(e) =>
+              void setTodoReminder(todo.id, e.target.value === '' ? null : e.target.value)
             }
-          }}
-        >
-          {RECURRENCE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </label>
+          >
+            {REMINDER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <div className={styles.field}>
-        <span>Tags</span>
-        <ul className={styles.tagList}>
-          {todo.tags.map((tag) => (
-            <li key={tag} className={styles.tag}>
-              #{tag}
-              <button
-                type="button"
-                className={styles.tagRemove}
-                aria-label={`Remove tag ${tag}`}
-                onClick={() => removeTag(tag)}
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-        <input
-          type="text"
-          value={tagDraft}
-          placeholder="Add tag"
-          aria-label="Add tag"
-          list="tag-suggestions"
-          onChange={(e) => setTagDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              addTag(tagDraft);
-            }
-          }}
-        />
-        <datalist id="tag-suggestions">
-          {tagSuggestions.map((t) => (
-            <option key={t} value={t} />
-          ))}
-        </datalist>
-        {tagSuggestions.length > 0 && (
-          <ul className={styles.suggestions}>
-            {tagSuggestions.map((t) => (
-              <li key={t}>
+        <label className={styles.field}>
+          <span>Repeat</span>
+          <select
+            value={todo.recurrence}
+            aria-label="Repeat"
+            onChange={(e) => {
+              const parsed = recurrenceSchema.safeParse(e.target.value);
+              if (parsed.success) {
+                void setTodoRecurrence(todo.id, parsed.data);
+              }
+            }}
+          >
+            {RECURRENCE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className={styles.field}>
+          <span>Tags</span>
+          <ul className={styles.tagList}>
+            {todo.tags.map((tag) => (
+              <li key={tag} className={styles.tag}>
+                #{tag}
                 <button
                   type="button"
-                  className={styles.suggestion}
-                  onClick={() => addTag(t)}
+                  className={styles.tagRemove}
+                  aria-label={`Remove tag ${tag}`}
+                  onClick={() => removeTag(tag)}
                 >
-                  #{t}
+                  ×
                 </button>
               </li>
             ))}
           </ul>
-        )}
-      </div>
+          <input
+            type="text"
+            value={tagDraft}
+            placeholder="Add tag"
+            aria-label="Add tag"
+            list="tag-suggestions"
+            onChange={(e) => setTagDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addTag(tagDraft);
+              }
+            }}
+          />
+          <datalist id="tag-suggestions">
+            {tagSuggestions.map((t) => (
+              <option key={t} value={t} />
+            ))}
+          </datalist>
+          {tagSuggestions.length > 0 && (
+            <ul className={styles.suggestions}>
+              {tagSuggestions.map((t) => (
+                <li key={t}>
+                  <button
+                    type="button"
+                    className={styles.suggestion}
+                    onClick={() => addTag(t)}
+                  >
+                    #{t}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      <div className={styles.footer}>
-        <button
-          type="button"
-          className={styles.delete}
-          aria-label="Delete todo"
-          onClick={() => setConfirmingDelete(true)}
-        >
-          Delete
-        </button>
-        <button type="button" className={styles.done} onClick={onClose}>
-          Done
-        </button>
-      </div>
+        <div className={styles.footer}>
+          <button
+            type="button"
+            className={styles.delete}
+            aria-label="Delete todo"
+            onClick={() => setConfirmingDelete(true)}
+          >
+            Delete
+          </button>
+          <button type="button" className={styles.done} onClick={onClose}>
+            Done
+          </button>
+        </div>
+        </div>
       </div>
       {confirmingDelete && (
         <ConfirmDialog
@@ -362,8 +364,13 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           confirmLabel="Delete"
           cancelLabel="Cancel"
           onConfirm={async () => {
-            await deleteTodo(todo.id);
-            setConfirmingDelete(false);
+            try {
+              await deleteTodo(todo.id);
+            } catch {
+              // keep the dialog open on failure so the user can retry
+            } finally {
+              setConfirmingDelete(false);
+            }
             onClose();
           }}
           onCancel={() => setConfirmingDelete(false)}
@@ -371,6 +378,6 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           This action cannot be undone.
         </ConfirmDialog>
       )}
-    </div>
+    </>
   );
 }

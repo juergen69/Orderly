@@ -141,25 +141,25 @@
   gap: var(--spacing-sm);
 }
 
-.done {
-  background-color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+.done,
+.delete {
   border-radius: var(--radius-sm);
-  color: var(--color-bg-primary);
   font-size: var(--font-size-sm);
   padding: var(--spacing-xs) var(--spacing-lg);
   cursor: pointer;
+}
+
+.done {
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: var(--color-bg-primary);
 }
 
 .delete {
   margin-right: auto;
   background-color: var(--color-error);
   border: 1px solid var(--color-error);
-  border-radius: var(--radius-sm);
   color: var(--color-bg-primary);
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-xs) var(--spacing-lg);
-  cursor: pointer;
 }
 
 .delete:hover {
