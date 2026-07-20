@@ -102,17 +102,19 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
         {onOpenTodo ? (
           <button
             type="button"
-            className={styles.titleButton}
+            className={todo.title.trim() ? styles.titleButton : styles.placeholderButton}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               onOpenTodo(todo.id);
             }}
           >
-            {todo.title}
+            {todo.title.trim() || '(untitled)'}
           </button>
-        ) : (
+        ) : todo.title.trim() ? (
           todo.title
+        ) : (
+          <span className={styles.placeholder}>(untitled)</span>
         )}
       </p>
 
