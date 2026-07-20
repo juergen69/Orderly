@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -15,6 +15,8 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import type { Project, SubStep, Todo, Status } from '../../domain/types';
 import { selectTodosByStatus } from '../../store/selectors';
 import { filterRecurringVisible } from '../../domain/recurringVisibility';
+import { parseQuickAdd } from '../../domain/quick-add';
+import { todayIso } from '../../domain/time';
 import { getActiveStore } from '../../store/storeInstance';
 import { BOARD_COLUMNS } from './boardMeta';
 import { Column } from './Column';
@@ -33,18 +35,32 @@ export interface BoardProps {
   onOpenTodo?: (id: string) => void;
 }
 
+function isEditableElement(element: Element | null): boolean {
+  if (!element) return false;
+  const tag = element.tagName.toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+  return element instanceof HTMLElement && element.isContentEditable;
+}
+
 export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
-  const store = getActiveStore();
-  const allTodos = store((s) => s.todos);
-  const projects = store((s) => s.projects);
-  const subSteps = store((s) => s.subSteps);
-  const showAllRecurring = store((s) => s.ui.showAllRecurring);
-  const searchQuery = store((s) => s.ui.searchQuery);
-  const selectedTags = store((s) => s.ui.selectedTags);
-  const moveTodo = store((s) => s.moveTodo);
-  const toggleFrog = store((s) => s.toggleFrog);
+  const storeRef = getActiveStore();
+  const allTodos = storeRef((s) => s.todos);
+  const projects = storeRef((s) => s.projects);
+  const subSteps = storeRef((s) => s.subSteps);
+  const showAllRecurring = storeRef((s) => s.ui.showAllRecurring);
+  const searchQuery = storeRef((s) => s.ui.searchQuery);
+  const selectedTags = storeRef((s) => s.ui.selectedTags);
+  const moveTodo = storeRef((s) => s.moveTodo);
+  const toggleFrog = storeRef((s) => s.toggleFrog);
+  const createTodo = storeRef((s) => s.createTodo);
 
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [composerStatus, setComposerStatus] = useState<Status>('todo');
+  const [composerDraft, setComposerDraft] = useState('');
+  const [composerError, setComposerError] = useState<string | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   const filteredTodos = useMemo(() => {
     let result = filterRecurringVisible(allTodos, showAllRecurring);
@@ -145,6 +161,72 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
 
   const activeTodo = activeId ? allTodos.find((t) => t.id === activeId) ?? null : null;
 
+  useEffect(() => {
+    if (composerOpen) {
+      composerRef.current?.focus();
+      setComposerError(null);
+    }
+  }, [composerOpen]);
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      if ((event.metaKey || event.ctrlKey) && key === 'k') {
+        return;
+      }
+      if (event.shiftKey && key === 'a' && !composerOpen && !isEditableElement(document.activeElement)) {
+        event.preventDefault();
+        setComposerOpen(true);
+        setComposerStatus('todo');
+        return;
+      }
+      if (key === 'escape' && composerOpen) {
+        event.preventDefault();
+        setComposerOpen(false);
+        return;
+      }
+      if (key === 'tab' && composerOpen && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0]!;
+        const last = focusable[focusable.length - 1]!;
+        const current = document.activeElement;
+        if (event.shiftKey && current === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && current === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [composerOpen]);
+
+  const handleComposerSubmit = useCallback(async () => {
+    const raw = composerDraft.trim();
+    if (raw.length === 0) return;
+    const parsed = parseQuickAdd(raw, projects, todayIso());
+    const title = parsed.title.length > 0 ? parsed.title : raw;
+    try {
+      await createTodo({
+        title,
+        status: composerStatus,
+        projectId: parsed.projectId ?? filterProjectId,
+        dueDate: parsed.dueDate,
+        tags: parsed.tags,
+      });
+      setComposerDraft('');
+      setComposerError(null);
+      setComposerOpen(false);
+    } catch (error) {
+      setComposerError(error instanceof Error ? error.message : 'Failed to add card');
+    }
+  }, [composerDraft, projects, composerStatus, createTodo, filterProjectId]);
+
   return (
     <div className={styles.boardWrapper}>
       <div className={styles.toolbar}>
@@ -190,6 +272,96 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
           ) : null}
         </DragOverlay>
       </DndContext>
+      <button
+        type="button"
+        className={styles.fab}
+        aria-label="Add card"
+        aria-haspopup="dialog"
+        onClick={() => setComposerOpen(true)}
+      >
+        +
+      </button>
+      {composerOpen ? (
+        <div
+          className={styles.sheetBackdrop}
+          role="presentation"
+          onClick={() => setComposerOpen(false)}
+        >
+          <div
+            ref={dialogRef}
+            className={styles.sheet}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Add card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className={styles.sheetHeader}>
+              <span className={styles.sheetTitle}>New card</span>
+              <button
+                type="button"
+                className={styles.sheetClose}
+                aria-label="Close add card"
+                onClick={() => setComposerOpen(false)}
+              >
+                ×
+              </button>
+            </header>
+            <div className={styles.sheetBody}>
+              <div className={styles.sheetFilters}>
+                {BOARD_COLUMNS.map((col) => (
+                  <button
+                    key={col.status}
+                    type="button"
+                    className={styles.statusPill}
+                    data-active={composerStatus === col.status || undefined}
+                    onClick={() => setComposerStatus(col.status)}
+                  >
+                    {col.title}
+                  </button>
+                ))}
+              </div>
+              <p className={styles.hint}>Use #tag @project !date to target cards faster.</p>
+              {composerError !== null && (
+                <p className={styles.composerError} role="alert">
+                  {composerError}
+                </p>
+              )}
+              <label className={styles.sheetLabel}>
+                <span>Details</span>
+                <textarea
+                  ref={composerRef}
+                  className={styles.sheetInput}
+                  placeholder="Add card…"
+                  value={composerDraft}
+                  onChange={(e) => setComposerDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      void handleComposerSubmit();
+                    }
+                  }}
+                />
+              </label>
+            </div>
+            <footer className={styles.sheetFooter}>
+              <button
+                type="button"
+                className={styles.sheetCancel}
+                onClick={() => setComposerOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.sheetSubmit}
+                onClick={() => void handleComposerSubmit()}
+              >
+                Add card
+              </button>
+            </footer>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

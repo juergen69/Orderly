@@ -55,12 +55,14 @@ describe('Board', () => {
     expect(screen.queryByText('Unscoped')).not.toBeInTheDocument();
   });
 
-  it('inline quick-add creates a parsed todo in the column', async () => {
+  it('global composer parses quick-add syntax', async () => {
     const project = await store.getState().createProject('Home', '#22d3ee');
     render(<Board filterProjectId={null} />);
 
-    const input = screen.getByRole('textbox', { name: 'Add card to To do' });
-    await userEvent.type(input, 'Buy milk #errand @Home{Enter}');
+    await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add card' });
+    const textarea = within(dialog).getByRole('textbox', { name: 'Details' });
+    await userEvent.type(textarea, 'Buy milk #errand @Home{Enter}');
 
     const todos = store.getState().todos;
     expect(todos).toHaveLength(1);
@@ -72,18 +74,20 @@ describe('Board', () => {
     });
   });
 
-  it('quick-add defaults new cards to the active project filter', async () => {
+  it('composer defaults project selection from board filter', async () => {
     const project = await store.getState().createProject('Filtered', '#22d3ee');
     render(<Board filterProjectId={project.id} />);
 
-    const input = screen.getByRole('textbox', { name: 'Add card to In progress' });
-    await userEvent.type(input, 'Scoped task{Enter}');
+    await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add card' });
+    const textarea = within(dialog).getByRole('textbox', { name: 'Details' });
+    await userEvent.type(textarea, 'Scoped task{Enter}');
 
     const todos = store.getState().todos;
     expect(todos).toHaveLength(1);
     expect(todos[0]).toMatchObject({
       title: 'Scoped task',
-      status: 'inProgress',
+      status: 'todo',
       projectId: project.id,
     });
   });

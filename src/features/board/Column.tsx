@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { Project, SubStep, Todo, Status } from '../../domain/types';
-import { parseQuickAdd } from '../../domain/quick-add';
 import { todayIso } from '../../domain/time';
 import { selectArchivedSplit } from '../../store/selectors';
-import { getActiveStore } from '../../store/storeInstance';
 import { Card } from './Card';
 import styles from './Column.module.css';
 
@@ -31,10 +29,7 @@ export function Column({
   onToggleFrog,
   onOpenTodo,
 }: ColumnProps) {
-  const store = getActiveStore();
-  const createTodo = store((s) => s.createTodo);
   const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` });
-  const [draft, setDraft] = useState('');
   const [showArchived, setShowArchived] = useState(false);
 
   const projectById = new Map(projects.map((p) => [p.id, p]));
@@ -57,21 +52,6 @@ export function Column({
       onOpenTodo={onOpenTodo}
     />
   );
-
-  const handleAdd = async () => {
-    const raw = draft.trim();
-    if (raw.length === 0) return;
-    const parsed = parseQuickAdd(raw, projects, todayIso());
-    const title = parsed.title.length > 0 ? parsed.title : raw;
-    await createTodo({
-      projectId: parsed.projectId ?? filterProjectId,
-      title,
-      status,
-      dueDate: parsed.dueDate,
-      tags: parsed.tags,
-    });
-    setDraft('');
-  };
 
   return (
     <section className={styles.column} aria-label={title}>
@@ -121,22 +101,6 @@ export function Column({
         )}
       </div>
 
-      <div className={styles.addRow}>
-        <input
-          type="text"
-          className={styles.addInput}
-          value={draft}
-          placeholder="Add card…  (#tag @project !today)"
-          aria-label={`Add card to ${title}`}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              void handleAdd();
-            }
-          }}
-        />
-      </div>
     </section>
   );
 }
