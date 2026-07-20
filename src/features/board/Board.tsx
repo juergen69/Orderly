@@ -15,6 +15,8 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import type { Project, SubStep, Todo, Status } from '../../domain/types';
 import { selectTodosByStatus } from '../../store/selectors';
 import { filterRecurringVisible } from '../../domain/recurringVisibility';
+import { parseQuickAdd } from '../../domain/quick-add';
+import { todayIso } from '../../domain/time';
 import { getActiveStore } from '../../store/storeInstance';
 import { BOARD_COLUMNS } from './boardMeta';
 import { Column } from './Column';
@@ -31,6 +33,12 @@ export interface BoardProps {
   /** Active project filter; null shows all projects. */
   filterProjectId: string | null;
   onOpenTodo?: (id: string) => void;
+}
+
+function isEditableElement(element: Element | null): boolean {
+  if (!element) return false;
+  const tag = element.tagName.toLowerCase();
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || element.getAttribute('contenteditable') === 'true';
 }
 
 export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
@@ -149,6 +157,49 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   };
 
   const activeTodo = activeId ? allTodos.find((t) => t.id === activeId) ?? null : null;
+
+  useEffect(() => {
+    if (composerOpen) {
+      composerRef.current?.focus();
+    }
+  }, [composerOpen]);
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      if ((event.metaKey || event.ctrlKey) && key === 'k') {
+        return;
+      }
+      if (event.shiftKey && key === 'a' && !composerOpen && !isEditableElement(document.activeElement)) {
+        event.preventDefault();
+        setComposerOpen(true);
+        setComposerStatus('todo');
+        return;
+      }
+      if (key === 'escape' && composerOpen) {
+        event.preventDefault();
+        setComposerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [composerOpen]);
+
+  const handleComposerSubmit = useCallback(async () => {
+    const raw = composerDraft.trim();
+    if (raw.length === 0) return;
+    const parsed = parseQuickAdd(raw, projects, todayIso());
+    const title = parsed.title.length > 0 ? parsed.title : raw;
+    await createTodo({
+      title,
+      status: composerStatus,
+      projectId: parsed.projectId ?? filterProjectId,
+      dueDate: parsed.dueDate,
+      tags: parsed.tags,
+    });
+    setComposerDraft('');
+    setComposerOpen(false);
+  }, [composerDraft, projects, composerStatus, createTodo, filterProjectId]);
 
   return (
     <div className={styles.boardWrapper}>
@@ -272,42 +323,3 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
     </div>
   );
 }
-  useEffect(() => {
-    if (composerOpen && composerRef.current) {
-      composerRef.current.focus();
-    }
-  }, [composerOpen]);
-
-  const handleComposerSubmit = useCallback(async () => {
-    const raw = composerDraft.trim();
-    if (!raw) return;
-    const parsed = parseQuickAdd(raw, projects, todayIso());
-    const title = parsed.title || raw;
-    await createTodo({
-      title,
-      status: composerStatus,
-      projectId: parsed.projectId ?? filterProjectId,
-      dueDate: parsed.dueDate,
-      tags: parsed.tags,
-    });
-    setComposerDraft('');
-    setComposerOpen(false);
-  }, [composerDraft, projects, composerStatus, createTodo, filterProjectId]);
-
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        return;
-      }
-      if ((event.shiftKey && event.key.toLowerCase() === 'a') && !composerOpen) {
-        event.preventDefault();
-        setComposerOpen(true);
-        setComposerStatus('todo');
-      } else if (event.key === 'Escape' && composerOpen) {
-        event.preventDefault();
-        setComposerOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [composerOpen]);
