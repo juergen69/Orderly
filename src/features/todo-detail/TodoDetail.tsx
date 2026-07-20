@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Recurrence, Todo } from '../../domain/types';
 import {
   todoTitleSchema,
@@ -358,27 +359,29 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         </div>
         </div>
       </div>
-      {confirmingDelete && (
-        <ConfirmDialog
-          title="Delete this todo?"
-          destructive
-          confirmLabel="Delete"
-          cancelLabel="Cancel"
-          onConfirm={async () => {
-            try {
-              await deleteTodo(todo.id);
-              onClose();
-            } catch {
-              // keep the dialog open on failure so the user can retry
-            } finally {
-              setConfirmingDelete(false);
-            }
-          }}
-          onCancel={() => setConfirmingDelete(false)}
-        >
-          This action cannot be undone.
-        </ConfirmDialog>
-      )}
+      {confirmingDelete &&
+        createPortal(
+          <ConfirmDialog
+            title="Delete this todo?"
+            destructive
+            confirmLabel="Delete"
+            cancelLabel="Cancel"
+            onConfirm={async () => {
+              try {
+                await deleteTodo(todo.id);
+                onClose();
+              } catch {
+                // keep the dialog open on failure so the user can retry
+              } finally {
+                setConfirmingDelete(false);
+              }
+            }}
+            onCancel={() => setConfirmingDelete(false)}
+          >
+            This action cannot be undone.
+          </ConfirmDialog>,
+          document.body,
+        )}
     </>
   );
 }
