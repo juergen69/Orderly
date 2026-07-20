@@ -1,5 +1,5 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, within, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createStore } from '../../store/store';
 import { InMemoryRepository } from '../../storage/InMemoryRepository';
@@ -150,5 +150,35 @@ describe('TodoDetail', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(/at most 2000/i);
     await new Promise((r) => setTimeout(r, TITLE_SAVE_DEBOUNCE_MS + 50));
     expect(store.getState().todos.find((t) => t.id === todoId)!.description).toBe('');
+  });
+
+  it('deletes the todo after confirming the destructive dialog', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<TodoDetail todoId={todoId} onClose={onClose} />);
+
+    await user.click(screen.getByRole('button', { name: 'Delete todo' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Delete this todo?' });
+    expect(store.getState().todos.find((t) => t.id === todoId)).toBeDefined();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() =>
+      expect(store.getState().todos.find((t) => t.id === todoId)).toBeUndefined(),
+    );
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('does not delete when the confirmation is cancelled', async () => {
+    const user = userEvent.setup();
+    render(<TodoDetail todoId={todoId} onClose={() => {}} />);
+
+    await user.click(screen.getByRole('button', { name: 'Delete todo' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Delete this todo?' });
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Delete this todo?' })).toBeNull();
+    expect(store.getState().todos.find((t) => t.id === todoId)).toBeDefined();
   });
 });

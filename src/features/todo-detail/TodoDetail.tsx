@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Recurrence, Todo } from '../../domain/types';
 import {
   todoTitleSchema,
@@ -14,6 +15,7 @@ import {
 } from '../../domain/reminders';
 import { getActiveStore } from '../../store/storeInstance';
 import { DatePicker } from '../../components/DatePicker';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import styles from './TodoDetail.module.css';
 
 export const TITLE_SAVE_DEBOUNCE_MS = 300;
@@ -49,6 +51,10 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const setTodoReminder = store((s) => s.setTodoReminder);
   const setTodoRecurrence = store((s) => s.setTodoRecurrence);
   const setTodoTags = store((s) => s.setTodoTags);
+  const deleteTodo = store((s) => s.deleteTodo);
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [title, setTitle] = useState(todo?.title ?? '');
   const [description, setDescription] = useState(todo?.description ?? '');
@@ -58,6 +64,15 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
 
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const descTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      if (titleTimer.current) clearTimeout(titleTimer.current);
+      if (descTimer.current) clearTimeout(descTimer.current);
+    };
+  }, []);
 
   // Keep local fields in sync if the underlying todo changes identity.
   useEffect(() => {
@@ -66,13 +81,6 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
     setTitleError(null);
     setDescriptionError(null);
   }, [todoId]);
-
-  useEffect(() => {
-    return () => {
-      if (titleTimer.current) clearTimeout(titleTimer.current);
-      if (descTimer.current) clearTimeout(descTimer.current);
-    };
-  }, []);
 
   const existingTags = useMemo(() => {
     const set = new Set<string>();
@@ -159,190 +167,234 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   };
 
   return (
-    <div className={styles.overlay} role="presentation">
-      <div
-        ref={dialogRef}
-        className={styles.panel}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Todo details"
-        tabIndex={-1}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') {
-            e.preventDefault();
-            onClose();
-          }
-        }}
-      >
-        <div className={styles.headerRow}>
-          <h2 className={styles.heading}>Details</h2>
-          <button
-            type="button"
-            className={styles.close}
-            aria-label="Close details"
-            onClick={onClose}
+    <>
+      <div className={styles.overlay} role="presentation">
+        <div
+          ref={dialogRef}
+          className={styles.panel}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Todo details"
+          aria-hidden={confirmingDelete ? 'true' : undefined}
+          tabIndex={-1}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              onClose();
+            }
+          }}
+        >
+          <div className={styles.headerRow}>
+            <h2 className={styles.heading}>Details</h2>
+            <button
+              type="button"
+              className={styles.close}
+              aria-label="Close details"
+              onClick={onClose}
+            >
+              ×
+            </button>
+          </div>
+
+        <label className={styles.field}>
+          <span>Title</span>
+          <input
+            type="text"
+            value={title}
+            aria-label="Title"
+            aria-invalid={titleError !== null}
+            onChange={(e) => handleTitleChange(e.target.value)}
+          />
+          {titleError !== null && (
+            <span className={styles.error} role="alert">
+              {titleError}
+            </span>
+          )}
+        </label>
+
+        <label className={styles.field}>
+          <span>Description</span>
+          <textarea
+            value={description}
+            rows={4}
+            aria-label="Description"
+            aria-invalid={descriptionError !== null}
+            onChange={(e) => handleDescriptionChange(e.target.value)}
+          />
+          {descriptionError !== null && (
+            <span className={styles.error} role="alert">
+              {descriptionError}
+            </span>
+          )}
+        </label>
+
+        <label className={styles.field}>
+          <span>Project</span>
+          <select
+            value={todo.projectId ?? ''}
+            aria-label="Project"
+            onChange={(e) =>
+              void updateTodo({
+                ...todo,
+                projectId: e.target.value === '' ? null : e.target.value,
+              })
+            }
           >
-            ×
-          </button>
+            <option value="">No project</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className={styles.field}>
+          <span>Due date</span>
+          <DatePicker
+            value={todo.dueDate}
+            onChange={(iso) => void setTodoDueDate(todo.id, iso)}
+          />
         </div>
 
-      <label className={styles.field}>
-        <span>Title</span>
-        <input
-          type="text"
-          value={title}
-          aria-label="Title"
-          aria-invalid={titleError !== null}
-          onChange={(e) => handleTitleChange(e.target.value)}
-        />
-        {titleError !== null && (
-          <span className={styles.error} role="alert">
-            {titleError}
-          </span>
-        )}
-      </label>
-
-      <label className={styles.field}>
-        <span>Description</span>
-        <textarea
-          value={description}
-          rows={4}
-          aria-label="Description"
-          aria-invalid={descriptionError !== null}
-          onChange={(e) => handleDescriptionChange(e.target.value)}
-        />
-        {descriptionError !== null && (
-          <span className={styles.error} role="alert">
-            {descriptionError}
-          </span>
-        )}
-      </label>
-
-      <label className={styles.field}>
-        <span>Project</span>
-        <select
-          value={todo.projectId ?? ''}
-          aria-label="Project"
-          onChange={(e) =>
-            void updateTodo({
-              ...todo,
-              projectId: e.target.value === '' ? null : e.target.value,
-            })
-          }
-        >
-          <option value="">No project</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <div className={styles.field}>
-        <span>Due date</span>
-        <DatePicker
-          value={todo.dueDate}
-          onChange={(iso) => void setTodoDueDate(todo.id, iso)}
-        />
-      </div>
-
-      <label className={styles.field}>
-        <span>Reminder</span>
-        <select
-          value={todo.reminderLead ?? ''}
-          aria-label="Reminder"
-          onChange={(e) =>
-            void setTodoReminder(todo.id, e.target.value === '' ? null : e.target.value)
-          }
-        >
-          {REMINDER_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className={styles.field}>
-        <span>Repeat</span>
-        <select
-          value={todo.recurrence}
-          aria-label="Repeat"
-          onChange={(e) => {
-            const parsed = recurrenceSchema.safeParse(e.target.value);
-            if (parsed.success) {
-              void setTodoRecurrence(todo.id, parsed.data);
+        <label className={styles.field}>
+          <span>Reminder</span>
+          <select
+            value={todo.reminderLead ?? ''}
+            aria-label="Reminder"
+            onChange={(e) =>
+              void setTodoReminder(todo.id, e.target.value === '' ? null : e.target.value)
             }
-          }}
-        >
-          {RECURRENCE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </label>
+          >
+            {REMINDER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <div className={styles.field}>
-        <span>Tags</span>
-        <ul className={styles.tagList}>
-          {todo.tags.map((tag) => (
-            <li key={tag} className={styles.tag}>
-              #{tag}
-              <button
-                type="button"
-                className={styles.tagRemove}
-                aria-label={`Remove tag ${tag}`}
-                onClick={() => removeTag(tag)}
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-        <input
-          type="text"
-          value={tagDraft}
-          placeholder="Add tag"
-          aria-label="Add tag"
-          list="tag-suggestions"
-          onChange={(e) => setTagDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              addTag(tagDraft);
-            }
-          }}
-        />
-        <datalist id="tag-suggestions">
-          {tagSuggestions.map((t) => (
-            <option key={t} value={t} />
-          ))}
-        </datalist>
-        {tagSuggestions.length > 0 && (
-          <ul className={styles.suggestions}>
-            {tagSuggestions.map((t) => (
-              <li key={t}>
+        <label className={styles.field}>
+          <span>Repeat</span>
+          <select
+            value={todo.recurrence}
+            aria-label="Repeat"
+            onChange={(e) => {
+              const parsed = recurrenceSchema.safeParse(e.target.value);
+              if (parsed.success) {
+                void setTodoRecurrence(todo.id, parsed.data);
+              }
+            }}
+          >
+            {RECURRENCE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className={styles.field}>
+          <span>Tags</span>
+          <ul className={styles.tagList}>
+            {todo.tags.map((tag) => (
+              <li key={tag} className={styles.tag}>
+                #{tag}
                 <button
                   type="button"
-                  className={styles.suggestion}
-                  onClick={() => addTag(t)}
+                  className={styles.tagRemove}
+                  aria-label={`Remove tag ${tag}`}
+                  onClick={() => removeTag(tag)}
                 >
-                  #{t}
+                  ×
                 </button>
               </li>
             ))}
           </ul>
-        )}
-      </div>
+          <input
+            type="text"
+            value={tagDraft}
+            placeholder="Add tag"
+            aria-label="Add tag"
+            list="tag-suggestions"
+            onChange={(e) => setTagDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addTag(tagDraft);
+              }
+            }}
+          />
+          <datalist id="tag-suggestions">
+            {tagSuggestions.map((t) => (
+              <option key={t} value={t} />
+            ))}
+          </datalist>
+          {tagSuggestions.length > 0 && (
+            <ul className={styles.suggestions}>
+              {tagSuggestions.map((t) => (
+                <li key={t}>
+                  <button
+                    type="button"
+                    className={styles.suggestion}
+                    onClick={() => addTag(t)}
+                  >
+                    #{t}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      <div className={styles.footer}>
-        <button type="button" className={styles.done} onClick={onClose}>
-          Done
-        </button>
+        <div className={styles.footer}>
+          <button
+            type="button"
+            className={styles.delete}
+            aria-label="Delete todo"
+            onClick={() => {
+              setDeleteError(null);
+              setConfirmingDelete(true);
+            }}
+          >
+            Delete
+          </button>
+          <button type="button" className={styles.done} onClick={onClose}>
+            Done
+          </button>
+        </div>
+        {deleteError !== null && (
+          <div className={styles.deleteError}>
+            <span className={styles.error} role="alert">
+              {deleteError}
+            </span>
+          </div>
+        )}
+        </div>
       </div>
-      </div>
-    </div>
+      {confirmingDelete &&
+        createPortal(
+          <ConfirmDialog
+            title="Delete this todo?"
+            destructive
+            confirmLabel="Delete"
+            cancelLabel="Cancel"
+          onConfirm={async () => {
+            try {
+              await deleteTodo(todo.id);
+              onClose();
+            } catch (error) {
+              setDeleteError(error instanceof Error ? error.message : 'Failed to delete todo');
+            } finally {
+              if (mountedRef.current) setConfirmingDelete(false);
+            }
+          }}
+            onCancel={() => setConfirmingDelete(false)}
+          >
+            This action cannot be undone.
+          </ConfirmDialog>,
+          document.body,
+        )}
+    </>
   );
 }
