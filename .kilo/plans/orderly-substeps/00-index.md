@@ -59,7 +59,7 @@ src/components/ date picker, dialogs, toast, palette overlay, drawer/sheet
 | 16 | Calendar view + recurring filter | 06, 11 | §6, §5.6, §5.9 |
 | 17 | Focus 1-3-5 + focus areas | 11, 14 | §6, §5.10, §5.11 |
 | 18 | Archive + search + tags sidebar | 07, 08, 11, 14 | §6, §5.12, §5.15, §5.16 |
-| 19 | Command palette | 11, 13 | §6, §5.18 |
+| 19 ✅ | Command palette | 11, 13 | §6, §5.18 |
 | 20 | Import/export + eat-the-frog toggle | 09, 11, 14 | §6, §5.13, §5.20 |
 | 21 ✅ | Responsive layout + a11y/security/final validation | 13–20 | §7, §8 |
 
