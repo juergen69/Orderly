@@ -150,3 +150,18 @@
   padding: var(--spacing-xs) var(--spacing-lg);
   cursor: pointer;
 }
+
+.delete {
+  margin-right: auto;
+  background-color: var(--color-error);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  color: var(--color-bg-primary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-lg);
+  cursor: pointer;
+}
+
+.delete:hover {
+  filter: brightness(1.1);
+}

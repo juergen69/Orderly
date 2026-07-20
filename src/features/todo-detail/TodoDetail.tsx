@@ -14,6 +14,7 @@ import {
 } from '../../domain/reminders';
 import { getActiveStore } from '../../store/storeInstance';
 import { DatePicker } from '../../components/DatePicker';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import styles from './TodoDetail.module.css';
 
 export const TITLE_SAVE_DEBOUNCE_MS = 300;
@@ -49,6 +50,9 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const setTodoReminder = store((s) => s.setTodoReminder);
   const setTodoRecurrence = store((s) => s.setTodoRecurrence);
   const setTodoTags = store((s) => s.setTodoTags);
+  const deleteTodo = store((s) => s.deleteTodo);
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const [title, setTitle] = useState(todo?.title ?? '');
   const [description, setDescription] = useState(todo?.description ?? '');
@@ -338,11 +342,35 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
       </div>
 
       <div className={styles.footer}>
+        <button
+          type="button"
+          className={styles.delete}
+          aria-label="Delete todo"
+          onClick={() => setConfirmingDelete(true)}
+        >
+          Delete
+        </button>
         <button type="button" className={styles.done} onClick={onClose}>
           Done
         </button>
       </div>
       </div>
+      {confirmingDelete && (
+        <ConfirmDialog
+          title="Delete this todo?"
+          destructive
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          onConfirm={async () => {
+            await deleteTodo(todo.id);
+            setConfirmingDelete(false);
+            onClose();
+          }}
+          onCancel={() => setConfirmingDelete(false)}
+        >
+          This action cannot be undone.
+        </ConfirmDialog>
+      )}
     </div>
   );
 }
