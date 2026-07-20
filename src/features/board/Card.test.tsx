@@ -53,6 +53,7 @@ describe('Card placeholder title', () => {
     const onOpenTodo = vi.fn();
     render(<Card todo={makeTodo({ title: '' })} project={null} subSteps={[]} onToggleFrog={() => {}} onOpenTodo={onOpenTodo} />);
     const button = screen.getByRole('button', { name: '(untitled)' });
+    expect(button).toHaveClass(/titleButton/);
     expect(button).toHaveClass(/placeholderButton/);
   });
 
