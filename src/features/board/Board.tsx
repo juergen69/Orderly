@@ -185,7 +185,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
                 }}
                 aria-hidden="true"
               />
-              {activeTodo.title}
+              {activeTodo.title.trim() || '(untitled)'}
             </div>
           ) : null}
         </DragOverlay>

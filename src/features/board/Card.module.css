@@ -88,6 +88,12 @@
   text-decoration: underline;
 }
 
+.placeholderButton,
+.placeholder {
+  font-style: italic;
+  color: var(--color-text-tertiary);
+}
+
 .due,
 .dueOverdue {
   margin: 0;
