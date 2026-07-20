@@ -1,8 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { render, screen, within, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
-import userEvent from '@testing-library/user-event';
 import { createStore } from '../../store/store';
 import { InMemoryRepository } from '../../storage/InMemoryRepository';
 import { setActiveStore } from '../../store/storeInstance';
