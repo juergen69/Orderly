@@ -362,12 +362,12 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           <button type="button" className={styles.done} onClick={onClose}>
             Done
           </button>
-          {deleteError !== null && (
-            <span className={styles.error} role="alert">
-              {deleteError}
-            </span>
-          )}
         </div>
+        {deleteError !== null && (
+          <span className={styles.error} role="alert">
+            {deleteError}
+          </span>
+        )}
         </div>
       </div>
       {confirmingDelete &&
