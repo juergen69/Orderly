@@ -54,6 +54,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const deleteTodo = store((s) => s.deleteTodo);
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [title, setTitle] = useState(todo?.title ?? '');
   const [description, setDescription] = useState(todo?.description ?? '');
@@ -351,13 +352,21 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
             type="button"
             className={styles.delete}
             aria-label="Delete todo"
-            onClick={() => setConfirmingDelete(true)}
+            onClick={() => {
+              setDeleteError(null);
+              setConfirmingDelete(true);
+            }}
           >
             Delete
           </button>
           <button type="button" className={styles.done} onClick={onClose}>
             Done
           </button>
+          {deleteError !== null && (
+            <span className={styles.error} role="alert">
+              {deleteError}
+            </span>
+          )}
         </div>
         </div>
       </div>
@@ -372,8 +381,8 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
             try {
               await deleteTodo(todo.id);
               onClose();
-            } catch {
-              // delete failed; keep panel open so the user can retry
+            } catch (error) {
+              setDeleteError(error instanceof Error ? error.message : 'Failed to delete todo');
             } finally {
               if (mountedRef.current) setConfirmingDelete(false);
             }
