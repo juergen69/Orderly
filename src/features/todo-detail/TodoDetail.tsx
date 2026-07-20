@@ -88,21 +88,12 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
       .slice(0, 6);
   }, [tagDraft, existingTags, todo?.tags]);
 
-  // Close on Escape (and do not close on outside/backdrop click).
+  // Move focus into the dialog on open and return it to the trigger on close.
   const dialogRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
-
-  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
     dialogRef.current?.focus();
+    return () => previouslyFocused?.focus?.();
   }, []);
 
   if (!todo) {
