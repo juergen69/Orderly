@@ -171,6 +171,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           role="dialog"
           aria-modal="true"
           aria-label="Todo details"
+          aria-hidden={confirmingDelete ? 'true' : undefined}
           tabIndex={-1}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
@@ -366,12 +367,12 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           onConfirm={async () => {
             try {
               await deleteTodo(todo.id);
+              onClose();
             } catch {
               // keep the dialog open on failure so the user can retry
             } finally {
               setConfirmingDelete(false);
             }
-            onClose();
           }}
           onCancel={() => setConfirmingDelete(false)}
         >
