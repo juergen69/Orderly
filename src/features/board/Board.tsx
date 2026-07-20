@@ -38,7 +38,8 @@ export interface BoardProps {
 function isEditableElement(element: Element | null): boolean {
   if (!element) return false;
   const tag = element.tagName.toLowerCase();
-  return tag === 'input' || tag === 'textarea' || tag === 'select' || element.getAttribute('contenteditable') === 'true';
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+  return element instanceof HTMLElement && element.isContentEditable;
 }
 
 export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
