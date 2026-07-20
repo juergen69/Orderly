@@ -143,6 +143,11 @@
   color: var(--color-text-tertiary);
 }
 
+.composerError {
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+}
+
 .sheetLabel {
   display: flex;
   flex-direction: column;

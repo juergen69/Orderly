@@ -58,6 +58,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerStatus, setComposerStatus] = useState<Status>('todo');
   const [composerDraft, setComposerDraft] = useState('');
+  const [composerError, setComposerError] = useState<string | null>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -163,6 +164,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   useEffect(() => {
     if (composerOpen) {
       composerRef.current?.focus();
+      setComposerError(null);
     }
   }, [composerOpen]);
 
@@ -209,15 +211,20 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
     if (raw.length === 0) return;
     const parsed = parseQuickAdd(raw, projects, todayIso());
     const title = parsed.title.length > 0 ? parsed.title : raw;
-    await createTodo({
-      title,
-      status: composerStatus,
-      projectId: parsed.projectId ?? filterProjectId,
-      dueDate: parsed.dueDate,
-      tags: parsed.tags,
-    });
-    setComposerDraft('');
-    setComposerOpen(false);
+    try {
+      await createTodo({
+        title,
+        status: composerStatus,
+        projectId: parsed.projectId ?? filterProjectId,
+        dueDate: parsed.dueDate,
+        tags: parsed.tags,
+      });
+      setComposerDraft('');
+      setComposerError(null);
+      setComposerOpen(false);
+    } catch (error) {
+      setComposerError(error instanceof Error ? error.message : 'Failed to add card');
+    }
   }, [composerDraft, projects, composerStatus, createTodo, filterProjectId]);
 
   return (
@@ -314,6 +321,11 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
                 ))}
               </div>
               <p className={styles.hint}>Use #tag @project !date to target cards faster.</p>
+              {composerError !== null && (
+                <p className={styles.composerError} role="alert">
+                  {composerError}
+                </p>
+              )}
               <label className={styles.sheetLabel}>
                 <span>Details</span>
                 <textarea
