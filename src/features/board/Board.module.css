@@ -20,6 +20,42 @@
   min-height: 0;
 }
 
+.fab {
+  position: fixed;
+  right: var(--spacing-xl);
+  bottom: var(--spacing-xl);
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-bg-primary);
+  font-size: 2rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  z-index: 950;
+}
+
+.fab:focus-visible,
+.fab:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+.sheetBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(10 10 12 / 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 960;
+}
+
 .overlayCard {
   display: flex;
   align-items: center;
@@ -38,4 +74,115 @@
   width: 0.6rem;
   height: 0.6rem;
   border-radius: 50%;
+}
+
+.sheet {
+  width: min(40rem, 100%);
+  max-height: 90vh;
+  background: var(--color-bg-elevated);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+
+
+.sheetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sheetTitle {
+  font-size: var(--font-size-xl);
+  letter-spacing: 0.03em;
+}
+
+.sheetClose {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+}
+
+.sheetBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.sheetFilters {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.statusPill {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: none;
+  padding: var(--spacing-xs) var(--spacing-md);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.statusPill[data-active] {
+  background: var(--color-primary);
+  color: var(--color-bg-primary);
+  border-color: transparent;
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.sheetLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.sheetInput {
+  min-height: 8rem;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  resize: vertical;
+}
+
+.sheetFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.sheetCancel,
+.sheetSubmit {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  cursor: pointer;
+}
+
+.sheetCancel {
+  background: var(--color-bg-tertiary);
+}
+
+.sheetSubmit {
+  background: var(--color-primary);
+  color: var(--color-bg-primary);
+}
+
+.sheetSubmit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
