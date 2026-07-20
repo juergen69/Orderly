@@ -63,6 +63,15 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
 
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const descTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      if (titleTimer.current) clearTimeout(titleTimer.current);
+      if (descTimer.current) clearTimeout(descTimer.current);
+    };
+  }, []);
 
   // Keep local fields in sync if the underlying todo changes identity.
   useEffect(() => {
@@ -71,13 +80,6 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
     setTitleError(null);
     setDescriptionError(null);
   }, [todoId]);
-
-  useEffect(() => {
-    return () => {
-      if (titleTimer.current) clearTimeout(titleTimer.current);
-      if (descTimer.current) clearTimeout(descTimer.current);
-    };
-  }, []);
 
   const existingTags = useMemo(() => {
     const set = new Set<string>();
@@ -366,16 +368,14 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
             destructive
             confirmLabel="Delete"
             cancelLabel="Cancel"
-            onConfirm={async () => {
-              try {
-                await deleteTodo(todo.id);
-                onClose();
-              } catch {
-                // keep the dialog open on failure so the user can retry
-              } finally {
-                setConfirmingDelete(false);
-              }
-            }}
+          onConfirm={async () => {
+            try {
+              await deleteTodo(todo.id);
+              onClose();
+            } finally {
+              if (mountedRef.current) setConfirmingDelete(false);
+            }
+          }}
             onCancel={() => setConfirmingDelete(false)}
           >
             This action cannot be undone.
