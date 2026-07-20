@@ -165,3 +165,7 @@
 .delete:hover {
   filter: brightness(1.1);
 }
+
+.deleteError {
+  width: 100%;
+}
