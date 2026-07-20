@@ -25,7 +25,6 @@ export function Column({
   todos,
   projects,
   subStepsByTodo,
-  filterProjectId,
   onToggleFrog,
   onOpenTodo,
 }: ColumnProps) {
