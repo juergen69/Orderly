@@ -257,8 +257,18 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
         +
       </button>
       {composerOpen ? (
-        <div className={styles.sheetBackdrop} role="presentation">
-          <div className={styles.sheet} role="dialog" aria-modal="true" aria-label="Add card">
+        <div
+          className={styles.sheetBackdrop}
+          role="presentation"
+          onClick={() => setComposerOpen(false)}
+        >
+          <div
+            className={styles.sheet}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Add card"
+            onClick={(e) => e.stopPropagation()}
+          >
             <header className={styles.sheetHeader}>
               <span className={styles.sheetTitle}>New card</span>
               <button
