@@ -99,4 +99,85 @@ describe('Board', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Mark as frog' }));
     expect(store.getState().todos[0]!.isFrog).toBe(true);
   });
+
+  it('shows project autocomplete when typing @ in composer', async () => {
+    const project = await store.getState().createProject('Work', '#22d3ee');
+    render(<Board filterProjectId={null} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add card' });
+    const textarea = within(dialog).getByRole('textbox', { name: 'Details' });
+
+    await userEvent.type(textarea, '@W');
+    const suggestionList = document.querySelector('[role="listbox"]');
+    expect(suggestionList).toBeInTheDocument();
+    expect(within(suggestionList!).getByText('Work')).toBeInTheDocument();
+  });
+
+  it('accepting a project suggestion inserts full project name', async () => {
+    const project = await store.getState().createProject('Work', '#22d3ee');
+    render(<Board filterProjectId={null} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add card' });
+    const textarea = within(dialog).getByRole('textbox', { name: 'Details' });
+
+    await userEvent.type(textarea, '@W');
+    const suggestionList = document.querySelector('[role="listbox"]');
+    expect(suggestionList).toBeInTheDocument();
+
+    await userEvent.click(within(suggestionList!).getByText('Work'));
+    expect(textarea).toHaveValue('@Work ');
+  });
+
+  it('submitting with accepted suggestion assigns the project', async () => {
+    const project = await store.getState().createProject('Work', '#22d3ee');
+    render(<Board filterProjectId={null} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add card' });
+    const textarea = within(dialog).getByRole('textbox', { name: 'Details' });
+
+    await userEvent.type(textarea, '@Work{Enter}');
+    const todos = store.getState().todos;
+    expect(todos).toHaveLength(1);
+    expect(todos[0]).toMatchObject({
+      title: '',
+      projectId: project.id,
+    });
+  });
+
+  it('closes autocomplete on Escape without closing dialog', async () => {
+    const project = await store.getState().createProject('Work', '#22d3ee');
+    render(<Board filterProjectId={null} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add card' });
+    const textarea = within(dialog).getByRole('textbox', { name: 'Details' });
+
+    await userEvent.type(textarea, '@W');
+    let suggestionList = document.querySelector('[role="listbox"]');
+    expect(suggestionList).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    suggestionList = document.querySelector('[role="listbox"]');
+    expect(suggestionList).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Add card' })).toBeInTheDocument();
+  });
+
+  it('preserves unmatched @ token in project autocomplete', async () => {
+    render(<Board filterProjectId={null} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add card' });
+    const textarea = within(dialog).getByRole('textbox', { name: 'Details' });
+
+    await userEvent.type(textarea, 'email @nodentist{Enter}');
+    const todos = store.getState().todos;
+    expect(todos).toHaveLength(1);
+    expect(todos[0]).toMatchObject({
+      title: 'email @nodentist',
+      projectId: null,
+    });
+  });
 });

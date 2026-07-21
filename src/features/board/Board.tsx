@@ -106,6 +106,9 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const [composerStatus, setComposerStatus] = useState<Status>('todo');
   const [composerDraft, setComposerDraft] = useState('');
   const [composerError, setComposerError] = useState<string | null>(null);
+  const [projectSuggestions, setProjectSuggestions] = useState<Project[] | null>(null);
+  const [projectHighlightIndex, setProjectHighlightIndex] = useState(-1);
+  const projectQueryStartRef = useRef<number>(-1);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -244,8 +247,16 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
         return;
       }
       if (key === 'escape' && composerOpen) {
+        if (projectSuggestions !== null) {
+          event.preventDefault();
+          setProjectSuggestions(null);
+          setProjectHighlightIndex(-1);
+          projectQueryStartRef.current = -1;
+          return;
+        }
         event.preventDefault();
         setComposerOpen(false);
+        projectQueryStartRef.current = -1;
         return;
       }
       if (key === 'tab' && composerOpen && dialogRef.current) {
@@ -267,13 +278,33 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [composerOpen]);
+  }, [composerOpen, projectSuggestions]);
+
+  function computeProjectAutocomplete(
+    draft: string,
+    cursorPos: number,
+  ): { start: number; query: string } | null {
+    let end = cursorPos;
+    while (end > 0 && draft[end - 1] !== ' ' && draft[end - 1] !== '\n') {
+      end--;
+    }
+    if (end < cursorPos && draft[end] === '@') {
+      return { start: end, query: draft.substring(end + 1, cursorPos) };
+    }
+    return null;
+  }
+
+  function filterProjects(list: Project[], query: string): Project[] {
+    const lower = query.toLowerCase();
+    return list.filter((p) => p.name.toLowerCase().startsWith(lower)).slice(0, 8);
+  }
 
   const handleComposerSubmit = useCallback(async () => {
-    const raw = composerDraft.trim();
+    const textarea = composerRef.current;
+    const raw = (textarea?.value ?? composerDraft).trim();
     if (raw.length === 0) return;
     const parsed = parseQuickAdd(raw, projects, todayIso());
-    const title = parsed.title.length > 0 ? parsed.title : raw;
+    const title = parsed.title.length > 0 ? parsed.title : (parsed.projectId !== null ? parsed.title : raw);
     try {
       await createTodo({
         title,
@@ -285,10 +316,51 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
       setComposerDraft('');
       setComposerError(null);
       setComposerOpen(false);
+      setProjectSuggestions(null);
+      setProjectHighlightIndex(-1);
+      projectQueryStartRef.current = -1;
     } catch (error) {
       setComposerError(error instanceof Error ? error.message : 'Failed to add card');
     }
   }, [composerDraft, projects, composerStatus, createTodo, filterProjectId]);
+
+  const handleComposerChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target;
+    setComposerDraft(textarea.value);
+    const cursor = textarea.selectionStart;
+    const queryInfo = computeProjectAutocomplete(textarea.value, cursor);
+    if (queryInfo) {
+      projectQueryStartRef.current = queryInfo.start;
+      const filtered = filterProjects(projects, queryInfo.query);
+      setProjectSuggestions(filtered);
+      setProjectHighlightIndex(-1);
+    } else {
+      projectQueryStartRef.current = -1;
+      setProjectSuggestions(null);
+      setProjectHighlightIndex(-1);
+    }
+  }, [projects]);
+
+  const acceptProjectSuggestion = useCallback((project: Project) => {
+    const textarea = composerRef.current;
+    if (!textarea) return;
+    const currentDraft = textarea.value;
+    const cursor = textarea.selectionStart;
+    const queryInfo = computeProjectAutocomplete(currentDraft, cursor);
+    const start = queryInfo ? queryInfo.start : 0;
+    const before = currentDraft.substring(0, start);
+    const after = currentDraft.substring(cursor);
+    const newDraft = `${before}@${project.name} ${after}`;
+    setComposerDraft(newDraft);
+    setProjectSuggestions(null);
+    setProjectHighlightIndex(-1);
+    projectQueryStartRef.current = -1;
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const newCursor = before.length + project.name.length + 1;
+      textarea.setSelectionRange(newCursor, newCursor);
+    });
+  }, []);
 
   return (
     <div className={styles.boardWrapper}>
@@ -414,22 +486,82 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
                   {composerError}
                 </p>
               )}
-              <label className={styles.sheetLabel}>
-                <span>Details</span>
-                <textarea
-                  ref={composerRef}
-                  className={styles.sheetInput}
-                  placeholder="Add card…"
-                  value={composerDraft}
-                  onChange={(e) => setComposerDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      void handleComposerSubmit();
-                    }
-                  }}
-                />
-              </label>
+              <div className={styles.composerField}>
+                <label className={styles.sheetLabel}>
+                  <span>Details</span>
+                  <textarea
+                    ref={composerRef}
+                    className={styles.sheetInput}
+                    placeholder="Add card…"
+                    value={composerDraft}
+                    onChange={handleComposerChange}
+                    onKeyDown={(e) => {
+                      const isSuggesting =
+                        projectSuggestions !== null && projectSuggestions.length > 0;
+                      if (isSuggesting) {
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          setProjectHighlightIndex((prev) =>
+                            Math.min(prev + 1, projectSuggestions.length - 1),
+                          );
+                          return;
+                        }
+                        if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          setProjectHighlightIndex((prev) => Math.max(prev - 1, 0));
+                          return;
+                        }
+                        if (e.key === 'Escape') {
+                          e.preventDefault();
+                          setProjectSuggestions(null);
+                          setProjectHighlightIndex(-1);
+                          projectQueryStartRef.current = -1;
+                          return;
+                        }
+                        if (projectHighlightIndex >= 0 && projectHighlightIndex < projectSuggestions.length) {
+                          e.preventDefault();
+                          const accepted = projectSuggestions[projectHighlightIndex];
+                          acceptProjectSuggestion(accepted);
+                          if (e.key === 'Enter') {
+                            requestAnimationFrame(() => void handleComposerSubmit());
+                          }
+                          return;
+                        }
+                      }
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        void handleComposerSubmit();
+                      }
+                    }}
+                  />
+                </label>
+                {projectSuggestions !== null && (
+                  <div className={styles.projectSuggestions} role="listbox">
+                    {projectSuggestions.length === 0 ? (
+                      <div className={styles.projectSuggestionEmpty}>No matching projects</div>
+                    ) : (
+                      projectSuggestions.map((project, index) => (
+                        <button
+                          key={project.id}
+                          type="button"
+                          className={styles.projectSuggestionItem}
+                          data-highlighted={index === projectHighlightIndex ? '' : undefined}
+                          onClick={() => acceptProjectSuggestion(project)}
+                          role="option"
+                          aria-selected={index === projectHighlightIndex}
+                        >
+                          <span
+                            className={styles.projectSuggestionDot}
+                            style={{ backgroundColor: project.color }}
+                            aria-hidden="true"
+                          />
+                          {project.name}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <footer className={styles.sheetFooter}>
               <button

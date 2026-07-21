@@ -62,6 +62,7 @@ src/components/ date picker, dialogs, toast, palette overlay, drawer/sheet
 | 19 ✅ | Command palette | 11, 13 | §6, §5.18 |
 | 20 | Import/export + eat-the-frog toggle | 09, 11, 14 | §6, §5.13, §5.20 |
 | 21 ✅ | Responsive layout + a11y/security/final validation | 13–20 | §7, §8 |
+| 22 ✅ | Composer @ autocomplete + multi-word project fix | 08, 14 | §5.3 |
 
 ## Global validation (run at any checkpoint)
 

@@ -63,7 +63,10 @@ export function parseQuickAdd(
   const tokens = input.split(/\s+/);
   const titleParts: string[] = [];
 
-  for (const token of tokens) {
+  let i = 0;
+  while (i < tokens.length) {
+    const token = tokens[i];
+
     if (token.startsWith('#')) {
       const tag = token.slice(1).trim().toLowerCase();
       if (tag.length > 0 && !result.tags.includes(tag)) {
@@ -71,21 +74,42 @@ export function parseQuickAdd(
       } else if (tag.length === 0) {
         titleParts.push(token);
       }
+      i++;
       continue;
     }
 
     if (token.startsWith('@')) {
       const name = token.slice(1).trim();
       if (name.length > 0) {
-        const match = projects.find(
-          (p) => p.name.trim().toLowerCase() === name.toLowerCase(),
-        );
-        if (match) {
-          result.projectId = match.id;
+        let bestMatch: Project | undefined;
+        let bestLen = 0;
+
+        for (let len = 1; i + len <= tokens.length; len++) {
+          const parts = [name];
+          for (let j = 1; j < len; j++) {
+            parts.push(tokens[i + j]);
+          }
+          const candidate = parts.join(' ');
+          const found = projects.find(
+            (p) => p.name.trim().toLowerCase() === candidate.toLowerCase(),
+          );
+          if (found) {
+            bestMatch = found;
+            bestLen = len;
+          }
         }
+
+        if (bestMatch) {
+          result.projectId = bestMatch.id;
+          i += bestLen;
+          continue;
+        }
+
+        titleParts.push(token);
       } else {
         titleParts.push(token);
       }
+      i++;
       continue;
     }
 
@@ -93,11 +117,13 @@ export function parseQuickAdd(
       const due = resolveDueToken(token, today);
       if (due !== null) {
         result.dueDate = due;
+        i++;
         continue;
       }
     }
 
     titleParts.push(token);
+    i++;
   }
 
   result.title = titleParts.join(' ').trim();
