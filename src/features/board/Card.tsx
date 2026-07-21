@@ -117,7 +117,7 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
               onCycleTier(todo.id);
             }}
           >
-            {todo.tier ? TIER_ICONS[todo.tier] : '+'}
+            {todo.tier ? TIER_ICONS[todo.tier] : '💧'}
           </button>
         )}
       </div>

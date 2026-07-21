@@ -98,9 +98,9 @@ describe('Card tier button', () => {
     expect(screen.getByRole('button', { name: /Change tier/i })).toBeInTheDocument();
   });
 
-  it('shows + when no tier is assigned', () => {
+  it('shows 💧 placeholder when no tier is assigned', () => {
     render(<Card todo={makeTodo()} project={null} subSteps={[]} onToggleFrog={() => {}} onCycleTier={() => {}} />);
-    expect(screen.getByRole('button', { name: /Assign tier/i })).toHaveTextContent('+');
+    expect(screen.getByRole('button', { name: /Assign tier/i })).toHaveTextContent('💧');
   });
 
   it('shows the tier icon when tier is assigned', () => {
