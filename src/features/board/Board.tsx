@@ -51,10 +51,9 @@ function nextTodoTier(current: 1 | 3 | 5 | undefined, todos: Todo[]): 1 | 3 | 5 
     return null;
   }
 
-  const currentIndex = TIER_CYCLE.indexOf(current as 1 | 3 | 5);
-  for (let i = currentIndex + 1; i < TIER_CYCLE.length; i++) {
-    const t = TIER_CYCLE[i] as 1 | 3 | 5;
-    if (counts[t] < TIER_CAPACITY[t]) return t;
+  const currentIndex = TIER_CYCLE.indexOf(current);
+  if (currentIndex + 1 < TIER_CYCLE.length) {
+    return TIER_CYCLE[currentIndex + 1] as 1 | 3 | 5;
   }
   return null;
 }
