@@ -84,7 +84,6 @@
 }
 
 .tier:hover:not(:disabled) {
-  filter: none;
   opacity: 1;
 }
 
