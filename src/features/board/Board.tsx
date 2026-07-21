@@ -25,8 +25,48 @@ import styles from './Board.module.css';
 
 const COLUMN_PREFIX = 'column:';
 
+const TIER_CYCLE = [5, 3, 1] as const;
+const TIER_CAPACITY: Record<1 | 3 | 5, number> = {
+  1: 1,
+  3: 3,
+  5: 5,
+};
+
 function isStatus(value: string): value is Status {
   return value === 'todo' || value === 'inProgress' || value === 'done';
+}
+
+function nextTodoTier(current: 1 | 3 | 5 | undefined, todos: Todo[]): 1 | 3 | 5 | null {
+  const counts: Record<1 | 3 | 5, number> = { 1: 0, 3: 0, 5: 0 };
+  for (const t of todos) {
+    if (t.tier === 1 || t.tier === 3 || t.tier === 5) {
+      counts[t.tier]++;
+    }
+  }
+
+  if (current === undefined) {
+    for (const t of TIER_CYCLE) {
+      if (counts[t] < TIER_CAPACITY[t]) return t;
+    }
+    return null;
+  }
+
+  const currentIndex = TIER_CYCLE.indexOf(current as 1 | 3 | 5);
+  for (let i = currentIndex + 1; i < TIER_CYCLE.length; i++) {
+    const t = TIER_CYCLE[i] as 1 | 3 | 5;
+    if (counts[t] < TIER_CAPACITY[t]) return t;
+  }
+  return null;
+}
+
+function allTiersFull(todos: Todo[]): boolean {
+  const counts: Record<1 | 3 | 5, number> = { 1: 0, 3: 0, 5: 0 };
+  for (const t of todos) {
+    if (t.tier === 1 || t.tier === 3 || t.tier === 5) {
+      counts[t.tier]++;
+    }
+  }
+  return counts[1] >= TIER_CAPACITY[1] && counts[3] >= TIER_CAPACITY[3] && counts[5] >= TIER_CAPACITY[5];
 }
 
 export interface BoardProps {
@@ -53,6 +93,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const moveTodo = storeRef((s) => s.moveTodo);
   const toggleFrog = storeRef((s) => s.toggleFrog);
   const createTodo = storeRef((s) => s.createTodo);
+  const setTodoTier = storeRef((s) => s.setTodoTier);
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -161,6 +202,19 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
 
   const activeTodo = activeId ? allTodos.find((t) => t.id === activeId) ?? null : null;
 
+  const tierDisabled = useMemo(() => allTiersFull(filteredTodos), [filteredTodos]);
+
+  const handleCycleTier = useCallback(
+    (id: string) => {
+      const todo = filteredTodos.find((t) => t.id === id);
+      if (!todo) return;
+      const next = nextTodoTier(todo.tier, filteredTodos);
+      if (next === null && todo.tier === undefined) return;
+      void setTodoTier(id, next);
+    },
+    [filteredTodos, setTodoTier],
+  );
+
   useEffect(() => {
     if (composerOpen) {
       composerRef.current?.focus();
@@ -250,9 +304,22 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
               subStepsByTodo={subStepsByTodo}
               filterProjectId={filterProjectId}
               onToggleFrog={toggleFrog}
+              onCycleTier={handleCycleTier}
+              tierDisabled={tierDisabled}
               onOpenTodo={onOpenTodo}
             />
           ))}
+        </div>
+        <div className={styles.legend} aria-label="Tier legend">
+          <span className={styles.legendItem} data-tier="1">
+            <span className={styles.legendIcon} aria-hidden="true">🔥</span> 1 big task
+          </span>
+          <span className={styles.legendItem} data-tier="3">
+            <span className={styles.legendIcon} aria-hidden="true">⚡</span> 3 medium tasks
+          </span>
+          <span className={styles.legendItem} data-tier="5">
+            <span className={styles.legendIcon} aria-hidden="true">💧</span> 5 small tasks
+          </span>
         </div>
         <DragOverlay>
           {activeTodo ? (

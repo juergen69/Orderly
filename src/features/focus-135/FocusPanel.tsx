@@ -10,12 +10,13 @@ import {
   pointerWithin,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import type { FocusSlot, Todo } from '../../domain/types';
+import type { Todo } from '../../domain/types';
 import { parseQuickAdd } from '../../domain/quick-add';
 import { todayIso } from '../../domain/time';
 import { getActiveStore } from '../../store/storeInstance';
 import styles from './FocusPanel.module.css';
 
+// 1-3-5 layout: slot 0 is large, 1-3 medium, 4-8 small.
 const SLOT_SIZES: ('large' | 'medium' | 'small')[] = [
   'large',
   'medium',
@@ -28,46 +29,7 @@ const SLOT_SIZES: ('large' | 'medium' | 'small')[] = [
   'small',
 ];
 
-const TIER_CYCLE = [5, 3, 1] as const;
-const TIER_ICONS: Record<1 | 3 | 5, string> = {
-  1: '🔥',
-  3: '⚡',
-  5: '💧',
-};
-const TIER_CAPACITY: Record<1 | 3 | 5, number> = {
-  1: 1,
-  3: 3,
-  5: 5,
-};
-
 const LIST_DROPPABLE = 'focus-list';
-
-function nextTier(current: 1 | 3 | 5 | undefined, slots: FocusSlot[]): 1 | 3 | 5 | null {
-  const counts: Record<1 | 3 | 5, number> = { 1: 0, 3: 0, 5: 0 };
-  for (const s of slots) {
-    if (s.tier === 1 || s.tier === 3 || s.tier === 5) {
-      counts[s.tier]++;
-    }
-  }
-
-  if (current === undefined) {
-    for (const t of TIER_CYCLE) {
-      if (counts[t] < TIER_CAPACITY[t]) return t;
-    }
-    return null;
-  }
-
-  const currentIndex = TIER_CYCLE.indexOf(current as 1 | 3 | 5);
-  for (let i = currentIndex + 1; i < TIER_CYCLE.length; i++) {
-    const t = TIER_CYCLE[i] as 1 | 3 | 5;
-    if (counts[t] < TIER_CAPACITY[t]) return t;
-  }
-  return null;
-}
-
-function allSlotsTiered(slots: FocusSlot[]): boolean {
-  return slots.every((s) => s.tier === 1 || s.tier === 3 || s.tier === 5);
-}
 
 export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }) {
   const store = getActiveStore();
@@ -75,7 +37,6 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
   const projects = store((s) => s.projects);
   const focusSlots = store((s) => s.ui.focusSlots);
   const setFocusSlot = store((s) => s.setFocusSlot);
-  const setFocusSlotTier = store((s) => s.setFocusSlotTier);
   const createTodo = store((s) => s.createTodo);
 
   const sensors = useSensors(
@@ -85,6 +46,7 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
 
   const todoById = useMemo(() => new Map(todos.map((t) => [t.id, t])), [todos]);
 
+  // A slot's referenced todo is only shown if it still exists and isn't done.
   const slotTodo = (todoId: string | null): Todo | null => {
     if (todoId === null) return null;
     const todo = todoById.get(todoId);
@@ -96,6 +58,7 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
     focusSlots.map((s) => slotTodo(s.todoId)?.id).filter((id): id is string => Boolean(id)),
   );
 
+  // Source list: active (non-done) todos not already in a slot.
   const sourceTodos = todos.filter((t) => t.status !== 'done' && !assignedIds.has(t.id));
 
   const clearSlotByTodo = (todoId: string) => {
@@ -104,6 +67,7 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
   };
 
   const assignToSlot = (index: number, todoId: string) => {
+    // If the todo already occupies another slot, clear that one first (move).
     const existing = focusSlots.find((s) => s.todoId === todoId && s.index !== index);
     if (existing) setFocusSlot(existing.index, null);
     setFocusSlot(index, todoId);
@@ -112,12 +76,13 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-    const activeId = String(active.id);
-    const overId = String(over.id);
+    const activeId = String(active.id); // "todo:<id>"
+    const overId = String(over.id); // "slot:<index>" | "focus-list"
     if (!activeId.startsWith('todo:')) return;
     const todoId = activeId.slice('todo:'.length);
 
     if (overId === LIST_DROPPABLE) {
+      // slot -> list: unassign.
       clearSlotByTodo(todoId);
       return;
     }
@@ -126,16 +91,6 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
       if (Number.isInteger(index)) assignToSlot(index, todoId);
     }
   };
-
-  const handleCycleTier = (index: number) => {
-    const slot = focusSlots[index];
-    if (!slot) return;
-    const next = nextTier(slot.tier, focusSlots);
-    if (next === null && slot.tier === undefined) return;
-    setFocusSlotTier(index, next);
-  };
-
-  const disabled = allSlotsTiered(focusSlots);
 
   return (
     <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
@@ -146,16 +101,15 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
               key={slot.index}
               index={slot.index}
               size={SLOT_SIZES[slot.index] ?? 'small'}
-              tier={slot.tier}
               todo={slotTodo(slot.todoId)}
               projects={projects}
               onClear={() => setFocusSlot(slot.index, null)}
-              onCycleTier={() => handleCycleTier(slot.index)}
-              tierDisabled={disabled}
               onOpenTodo={onOpenTodo}
               onAdd={async (raw) => {
                 const parsed = parseQuickAdd(raw, projects, todayIso());
                 const title = parsed.title.length > 0 ? parsed.title : raw;
+                // New focus todos are project-less by default and land in the
+                // first ("todo") column so they are valid, board-visible records.
                 const created = await createTodo({
                   projectId: parsed.projectId ?? null,
                   title,
@@ -169,17 +123,6 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
         </div>
 
         <FocusSource todos={sourceTodos} onOpenTodo={onOpenTodo} />
-        <div className={styles.legend} aria-label="Tier legend">
-          <span className={styles.legendItem} data-tier="1">
-            <span className={styles.legendIcon} aria-hidden="true">🔥</span> 1 big task
-          </span>
-          <span className={styles.legendItem} data-tier="3">
-            <span className={styles.legendIcon} aria-hidden="true">⚡</span> 3 medium tasks
-          </span>
-          <span className={styles.legendItem} data-tier="5">
-            <span className={styles.legendIcon} aria-hidden="true">💧</span> 5 small tasks
-          </span>
-        </div>
       </div>
     </DndContext>
   );
@@ -188,25 +131,19 @@ export function FocusPanel({ onOpenTodo }: { onOpenTodo?: (id: string) => void }
 function FocusSlot({
   index,
   size,
-  tier,
   todo,
   projects,
   onClear,
-  onCycleTier,
-  tierDisabled,
-  onOpenTodo,
   onAdd,
+  onOpenTodo,
 }: {
   index: number;
   size: 'large' | 'medium' | 'small';
-  tier?: 1 | 3 | 5;
   todo: Todo | null;
   projects: { id: string; name: string }[];
   onClear: () => void;
-  onCycleTier: () => void;
-  tierDisabled: boolean;
-  onOpenTodo?: (id: string) => void;
   onAdd: (raw: string) => Promise<void>;
+  onOpenTodo?: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `slot:${index}` });
   const [draft, setDraft] = useState('');
@@ -216,19 +153,12 @@ function FocusSlot({
       ref={setNodeRef}
       className={styles.slot}
       data-size={size}
-      data-tier={tier}
       data-over={isOver || undefined}
       role="listitem"
-      aria-label={`Focus slot ${index + 1}${tier ? `, tier ${tier}` : ''}`}
+      aria-label={`Focus slot ${index + 1}`}
     >
       {todo ? (
-        <FocusSlotCard
-          todo={todo}
-          tier={tier}
-          projects={projects}
-          onClear={onClear}
-          onOpenTodo={onOpenTodo}
-        />
+        <FocusSlotCard todo={todo} projects={projects} onClear={onClear} onOpenTodo={onOpenTodo} />
       ) : (
         <form
           className={styles.addForm}
@@ -249,29 +179,17 @@ function FocusSlot({
           />
         </form>
       )}
-      <button
-        type="button"
-        className={styles.tierButton}
-        data-tier={tier}
-        disabled={tierDisabled}
-        aria-label={tier ? `Change tier (currently ${tier})` : 'Assign tier'}
-        onClick={onCycleTier}
-      >
-        {tier ? TIER_ICONS[tier] : '+'}
-      </button>
     </div>
   );
 }
 
 function FocusSlotCard({
   todo,
-  tier,
   projects,
   onClear,
   onOpenTodo,
 }: {
   todo: Todo;
-  tier?: 1 | 3 | 5;
   projects: { id: string; name: string }[];
   onClear: () => void;
   onOpenTodo?: (id: string) => void;
@@ -282,7 +200,7 @@ function FocusSlotCard({
   const project = todo.projectId ? projects.find((p) => p.id === todo.projectId) : null;
 
   return (
-    <div className={styles.card} data-dragging={isDragging || undefined} data-tier={tier}>
+    <div className={styles.card} data-dragging={isDragging || undefined}>
       <button
         type="button"
         className={styles.dragHandle}
@@ -293,11 +211,6 @@ function FocusSlotCard({
       >
         ⠿
       </button>
-      {tier && (
-        <span className={styles.cardTier} data-tier={tier} aria-hidden="true">
-          {TIER_ICONS[tier]}
-        </span>
-      )}
       <button
         type="button"
         className={styles.cardTitle}

@@ -191,3 +191,35 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.legendIcon {
+  font-size: var(--font-size-sm);
+  line-height: 1;
+}
+
+.legendItem[data-tier='1'] .legendIcon {
+  color: var(--color-error);
+}
+
+.legendItem[data-tier='3'] .legendIcon {
+  color: var(--color-accent);
+}
+
+.legendItem[data-tier='5'] .legendIcon {
+  color: var(--color-primary);
+}

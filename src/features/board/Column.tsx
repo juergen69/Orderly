@@ -16,6 +16,8 @@ export interface ColumnProps {
   /** Active project filter (null = all). New cards default to this project. */
   filterProjectId: string | null;
   onToggleFrog: (id: string) => void;
+  onCycleTier?: (id: string) => void;
+  tierDisabled?: boolean;
   onOpenTodo?: (id: string) => void;
 }
 
@@ -26,6 +28,8 @@ export function Column({
   projects,
   subStepsByTodo,
   onToggleFrog,
+  onCycleTier,
+  tierDisabled,
   onOpenTodo,
 }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` });
@@ -48,6 +52,8 @@ export function Column({
       project={todo.projectId ? projectById.get(todo.projectId) ?? null : null}
       subSteps={subStepsByTodo.get(todo.id) ?? []}
       onToggleFrog={onToggleFrog}
+      onCycleTier={onCycleTier}
+      tierDisabled={tierDisabled}
       onOpenTodo={onOpenTodo}
     />
   );

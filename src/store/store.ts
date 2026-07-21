@@ -45,6 +45,7 @@ export interface StoreState {
   setTodoRecurrence(id: string, recurrence: Recurrence): Promise<void>;
   setTodoTags(id: string, tags: string[]): Promise<void>;
   toggleFrog(id: string): Promise<void>;
+  setTodoTier(id: string, tier: 1 | 3 | 5 | null): Promise<void>;
 
   createSubStep(todoId: string, title: string): Promise<SubStep>;
   updateSubStep(subStep: SubStep): Promise<void>;
@@ -55,7 +56,6 @@ export interface StoreState {
   setActiveView(view: ActiveView): void;
   setShowAllRecurring(value: boolean): void;
   setFocusSlot(index: number, todoId: string | null): void;
-  setFocusSlotTier(index: number, tier: 1 | 3 | 5 | null): void;
   setFocusArea(index: number, text: string): void;
   setSearchQuery(query: string): void;
   setSelectedTags(tags: string[]): void;
@@ -401,16 +401,12 @@ export function createStore(options: CreateStoreOptions) {
       });
     },
 
-    setFocusSlotTier(index, tier) {
-      set((state) => {
-        const focusSlots = state.ui.focusSlots.map((slot) => {
-          if (slot.index !== index) return slot;
-          return { ...slot, tier: tier === null ? undefined : tier };
-        });
-        const ui = { ...state.ui, focusSlots };
-        saveUiState(ui);
-        return { ui };
-      });
+    async setTodoTier(id: string, tier: 1 | 3 | 5 | null) {
+      const todo = get().todos.find((t) => t.id === id);
+      if (!todo) return;
+      const updated = { ...todo, tier: tier === null ? undefined : tier, updatedAt: nowIso() };
+      await get().repository.updateTodo(updated);
+      set({ todos: get().todos.map((t) => (t.id === id ? updated : t)) });
     },
 
     setFocusArea(index, text) {

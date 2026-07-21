@@ -22,6 +22,7 @@ function makeTodo(overrides: Partial<Todo> = {}): Todo {
     reminderLead: null,
     tags: [],
     isFrog: false,
+    tier: undefined,
     ...overrides,
   };
 }
@@ -83,5 +84,39 @@ describe('Card placeholder title', () => {
     const button = screen.getByRole('button', { name: 'Real task' });
     expect(button).toHaveClass(/titleButton/);
     expect(button).not.toHaveClass(/placeholderButton/);
+  });
+});
+
+describe('Card tier button', () => {
+  it('does not render a tier button when onCycleTier is not provided', () => {
+    render(<Card todo={makeTodo({ tier: 1 })} project={null} subSteps={[]} onToggleFrog={() => {}} />);
+    expect(screen.queryByRole('button', { name: /tier/i })).not.toBeInTheDocument();
+  });
+
+  it('renders a tier button when onCycleTier is provided', () => {
+    render(<Card todo={makeTodo({ tier: 1 })} project={null} subSteps={[]} onToggleFrog={() => {}} onCycleTier={() => {}} />);
+    expect(screen.getByRole('button', { name: /Change tier/i })).toBeInTheDocument();
+  });
+
+  it('shows + when no tier is assigned', () => {
+    render(<Card todo={makeTodo()} project={null} subSteps={[]} onToggleFrog={() => {}} onCycleTier={() => {}} />);
+    expect(screen.getByRole('button', { name: /Assign tier/i })).toHaveTextContent('+');
+  });
+
+  it('shows the tier icon when tier is assigned', () => {
+    render(<Card todo={makeTodo({ tier: 3 })} project={null} subSteps={[]} onToggleFrog={() => {}} onCycleTier={() => {}} />);
+    expect(screen.getByRole('button', { name: /Change tier/i })).toHaveTextContent('⚡');
+  });
+
+  it('calls onCycleTier with the todo id when clicked', async () => {
+    const onCycleTier = vi.fn();
+    render(<Card todo={makeTodo({ id: 'abc' })} project={null} subSteps={[]} onToggleFrog={() => {}} onCycleTier={onCycleTier} />);
+    await userEvent.click(screen.getByRole('button', { name: /Assign tier/i }));
+    expect(onCycleTier).toHaveBeenCalledWith('abc');
+  });
+
+  it('disables the tier button when tierDisabled is true', () => {
+    render(<Card todo={makeTodo()} project={null} subSteps={[]} onToggleFrog={() => {}} onCycleTier={() => {}} tierDisabled />);
+    expect(screen.getByRole('button', { name: /Assign tier/i })).toBeDisabled();
   });
 });
