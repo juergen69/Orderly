@@ -1,9 +1,0 @@
-.input {
-  width: min(22rem, 60vw);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-}
