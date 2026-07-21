@@ -55,6 +55,7 @@ export interface StoreState {
   setActiveView(view: ActiveView): void;
   setShowAllRecurring(value: boolean): void;
   setFocusSlot(index: number, todoId: string | null): void;
+  setFocusSlotTier(index: number, tier: 1 | 3 | 5 | null): void;
   setFocusArea(index: number, text: string): void;
   setSearchQuery(query: string): void;
   setSelectedTags(tags: string[]): void;
@@ -394,6 +395,18 @@ export function createStore(options: CreateStoreOptions) {
         const focusSlots = state.ui.focusSlots.map((slot) =>
           slot.index === index ? { index, todoId } : slot,
         );
+        const ui = { ...state.ui, focusSlots };
+        saveUiState(ui);
+        return { ui };
+      });
+    },
+
+    setFocusSlotTier(index, tier) {
+      set((state) => {
+        const focusSlots = state.ui.focusSlots.map((slot) => {
+          if (slot.index !== index) return slot;
+          return { ...slot, tier: tier === null ? undefined : tier };
+        });
         const ui = { ...state.ui, focusSlots };
         saveUiState(ui);
         return { ui };

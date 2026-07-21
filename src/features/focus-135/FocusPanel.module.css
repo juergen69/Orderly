@@ -22,6 +22,7 @@
   padding: var(--spacing-xs);
   min-height: 3.5rem;
   display: flex;
+  position: relative;
 }
 
 .slot[data-size='large'] {
@@ -37,6 +38,18 @@
 .slot[data-over] {
   border-color: var(--color-accent);
   background-color: var(--color-bg-tertiary);
+}
+
+.slot[data-tier='1'] {
+  border-inline-start: 3px solid var(--color-error);
+}
+
+.slot[data-tier='3'] {
+  border-inline-start: 3px solid var(--color-accent);
+}
+
+.slot[data-tier='5'] {
+  border-inline-start: 3px solid var(--color-primary);
 }
 
 .addForm {
@@ -73,6 +86,36 @@
   opacity: 0.5;
 }
 
+.card[data-tier='1'] {
+  border-inline-start: 3px solid var(--color-error);
+}
+
+.card[data-tier='3'] {
+  border-inline-start: 3px solid var(--color-accent);
+}
+
+.card[data-tier='5'] {
+  border-inline-start: 3px solid var(--color-primary);
+}
+
+.cardTier {
+  font-size: var(--font-size-base);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cardTier[data-tier='1'] {
+  color: var(--color-error);
+}
+
+.cardTier[data-tier='3'] {
+  color: var(--color-accent);
+}
+
+.cardTier[data-tier='5'] {
+  color: var(--color-primary);
+}
+
 .cardTitle {
   flex: 1 1 auto;
   background: none;
@@ -104,6 +147,46 @@
   cursor: grab;
   touch-action: none;
   line-height: 1;
+}
+
+.tierButton {
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  padding: 2px var(--spacing-xs);
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.tierButton:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.tierButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.tierButton[data-tier='1'] {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.tierButton[data-tier='3'] {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.tierButton[data-tier='5'] {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .source {
@@ -164,4 +247,37 @@
 .sourceEmpty {
   color: var(--color-text-tertiary);
   font-size: var(--font-size-sm);
+}
+
+.legend {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.legendIcon {
+  font-size: var(--font-size-sm);
+  line-height: 1;
+}
+
+.legendItem[data-tier='1'] .legendIcon {
+  color: var(--color-error);
+}
+
+.legendItem[data-tier='3'] .legendIcon {
+  color: var(--color-accent);
+}
+
+.legendItem[data-tier='5'] .legendIcon {
+  color: var(--color-primary);
 }

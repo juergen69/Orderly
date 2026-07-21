@@ -27,6 +27,7 @@ function defaultFocusSlots(): FocusSlot[] {
   return Array.from({ length: FOCUS_SLOT_COUNT }, (_, index) => ({
     index,
     todoId: null,
+    tier: undefined,
   }));
 }
 
@@ -66,9 +67,11 @@ function sanitizeFocusSlots(raw: unknown): FocusSlot[] {
     const index = clampIndex(record['index'], FOCUS_SLOT_COUNT);
     if (index === -1) continue;
     const todoId = record['todoId'];
+    const tier = record['tier'];
     base[index] = {
       index,
       todoId: typeof todoId === 'string' ? todoId : null,
+      tier: tier === 1 || tier === 3 || tier === 5 ? tier : undefined,
     };
   }
   return base;
@@ -151,7 +154,7 @@ export function saveUiState(state: UiState): void {
 export function reconcileFocusSlots(slots: FocusSlot[], validTodoIds: Set<string>): FocusSlot[] {
   return slots.map((slot) => {
     if (slot.todoId !== null && !validTodoIds.has(slot.todoId)) {
-      return { index: slot.index, todoId: null };
+      return { index: slot.index, todoId: null, tier: slot.tier };
     }
     return slot;
   });
