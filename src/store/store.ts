@@ -16,7 +16,6 @@ import {
   defaultUiState,
   loadUiState,
   saveUiState,
-  reconcileFocusSlots,
   type UiState,
   type ActiveView,
 } from './uiState';
@@ -55,8 +54,6 @@ export interface StoreState {
 
   setActiveView(view: ActiveView): void;
   setShowAllRecurring(value: boolean): void;
-  setFocusSlot(index: number, todoId: string | null): void;
-  setFocusArea(index: number, text: string): void;
   setSearchQuery(query: string): void;
   setSelectedTags(tags: string[]): void;
   addTagFilter(tag: string): void;
@@ -113,7 +110,6 @@ export function createStore(options: CreateStoreOptions) {
         ui: loadUiState(),
         loaded: true,
       });
-      reconcileAfterLoad(set, get);
     },
 
     async createProject(name, color) {
@@ -144,32 +140,24 @@ export function createStore(options: CreateStoreOptions) {
     },
 
     async deleteProject(id, options) {
-      const { repository, projects, todos, subSteps, ui } = get();
+      const { repository, projects, todos, subSteps } = get();
       await repository.deleteProject(id, options);
       const remainingProjects = projects.filter((p) => p.id !== id);
       let remainingTodos: Todo[];
       let remainingSubSteps = subSteps;
       if (options.mode === 'cascade') {
-        // Drop the project's todos and their sub-steps.
-        const removedTodoIds = new Set(
-          todos.filter((t) => t.projectId === id).map((t) => t.id),
-        );
         remainingTodos = todos.filter((t) => t.projectId !== id);
-        remainingSubSteps = subSteps.filter((s) => !removedTodoIds.has(s.todoId));
+        remainingSubSteps = subSteps.filter((s) => !todos.some((t) => t.projectId === id && t.id === s.todoId));
       } else {
-        // Reassign the project's todos to the target; sub-steps ride along
-        // because they reference `todoId`, not `projectId`.
         const target = options.reassignTo ?? null;
         remainingTodos = todos.map((t) =>
           t.projectId === id ? { ...t, projectId: target } : t,
         );
       }
-      const validTodoIds = new Set(remainingTodos.map((t) => t.id));
       set({
         projects: remainingProjects,
         todos: remainingTodos,
         subSteps: remainingSubSteps,
-        ui: { ...ui, focusSlots: reconcileFocusSlots(ui.focusSlots, validTodoIds) },
       });
     },
 
@@ -228,14 +216,11 @@ export function createStore(options: CreateStoreOptions) {
     },
 
     async deleteTodo(id) {
-      const { repository, todos, subSteps, ui } = get();
+      const { repository, todos, subSteps } = get();
       await repository.deleteTodo(id);
-      const remainingTodos = todos.filter((t) => t.id !== id);
-      const validTodoIds = new Set(remainingTodos.map((t) => t.id));
       set({
-        todos: remainingTodos,
+        todos: todos.filter((t) => t.id !== id),
         subSteps: subSteps.filter((s) => s.todoId !== id),
-        ui: { ...ui, focusSlots: reconcileFocusSlots(ui.focusSlots, validTodoIds) },
       });
     },
 
@@ -258,9 +243,7 @@ export function createStore(options: CreateStoreOptions) {
         isFrog: status === 'done' ? false : target.isFrog,
       };
       await repository.updateTodo(updated);
-      let nextTodos = todos.map((t) => (t.id === id ? updated : t));
-      nextTodos = reconcileDoneSlots(nextTodos, get().ui, set);
-      set({ todos: nextTodos });
+      set({ todos: todos.map((t) => (t.id === id ? updated : t)) });
     },
 
     async setTodoDueDate(id, dueDate) {
@@ -390,34 +373,12 @@ export function createStore(options: CreateStoreOptions) {
       });
     },
 
-    setFocusSlot(index, todoId) {
-      set((state) => {
-        const focusSlots = state.ui.focusSlots.map((slot) =>
-          slot.index === index ? { index, todoId } : slot,
-        );
-        const ui = { ...state.ui, focusSlots };
-        saveUiState(ui);
-        return { ui };
-      });
-    },
-
     async setTodoTier(id: string, tier: 1 | 3 | 5 | null) {
       const todo = get().todos.find((t) => t.id === id);
       if (!todo) return;
       const updated = { ...todo, tier: tier === null ? undefined : tier, updatedAt: nowIso() };
       await get().repository.updateTodo(updated);
       set({ todos: get().todos.map((t) => (t.id === id ? updated : t)) });
-    },
-
-    setFocusArea(index, text) {
-      set((state) => {
-        const focusAreas = state.ui.focusAreas.map((area) =>
-          area.index === index ? { index, text } : area,
-        );
-        const ui = { ...state.ui, focusAreas };
-        saveUiState(ui);
-        return { ui };
-      });
     },
 
     setSearchQuery(query) {
@@ -460,13 +421,11 @@ export function createStore(options: CreateStoreOptions) {
     async replaceAll(data) {
       const { repository } = get();
       await repository.replaceAll(data);
-      const validTodoIds = new Set(data.todos.map((t) => t.id));
-      set((state) => ({
+      set({
         projects: data.projects,
         todos: data.todos,
         subSteps: data.subSteps,
-        ui: { ...state.ui, focusSlots: reconcileFocusSlots(state.ui.focusSlots, validTodoIds) },
-      }));
+      });
     },
 
     async exportAll() {
@@ -474,30 +433,4 @@ export function createStore(options: CreateStoreOptions) {
       return repository.exportAll();
     },
   }));
-}
-
-function reconcileAfterLoad(
-  set: (partial: Partial<StoreState>) => void,
-  get: () => StoreState,
-): void {
-  const { todos, ui } = get();
-  const validTodoIds = new Set(todos.map((t) => t.id));
-  set({ ui: { ...ui, focusSlots: reconcileFocusSlots(ui.focusSlots, validTodoIds) } });
-}
-
-function reconcileDoneSlots(
-  todos: Todo[],
-  ui: UiState,
-  set: (partial: Partial<StoreState>) => void,
-): Todo[] {
-  const hasDoneSlot = ui.focusSlots.some((slot) => {
-    const id = slot.todoId;
-    return id !== null && todos.find((t) => t.id === id)?.status === 'done';
-  });
-  if (!hasDoneSlot) {
-    return todos;
-  }
-  const validTodoIds = new Set(todos.map((t) => t.id));
-  set({ ui: { ...ui, focusSlots: reconcileFocusSlots(ui.focusSlots, validTodoIds) } });
-  return todos;
 }

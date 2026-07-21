@@ -81,11 +81,10 @@ describe('CommandPalette', () => {
     render(<CommandPalette open onClose={() => (closed = true)} />);
     const dialog = screen.getByRole('dialog');
     const input = within(dialog).getByLabelText('Command query');
-    await userEvent.type(input, 'focus area 1');
+    await userEvent.type(input, 'new todo');
     await userEvent.click(
-      within(dialog).getByRole('option', { name: /Open focus area 1/ }),
+      within(dialog).getByRole('option', { name: /New todo/ }),
     );
-    // focusByLabel queries the DOM; nothing to assert there, but palette closed.
     expect(closed).toBe(true);
   });
 });

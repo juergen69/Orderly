@@ -5,15 +5,10 @@ export interface Command {
   id: string;
   title: string;
   hint?: string;
-  /** Lowercase keywords used for fuzzy matching (title is always included). */
   keywords: string;
   run: () => void;
 }
 
-/**
- * Subsequence fuzzy score. Returns null when `query` is not a subsequence of
- * `text` (case-insensitive). Higher is better; exact prefix scores highest.
- */
 export function fuzzyScore(query: string, text: string): number | null {
   const q = query.toLowerCase();
   const t = text.toLowerCase();
@@ -37,7 +32,7 @@ export function fuzzyScore(query: string, text: string): number | null {
     if (firstMatch === -1) firstMatch = found;
     if (found === ti) {
       streak += 1;
-      score += 3 + streak; // reward consecutive matches
+      score += 3 + streak;
     } else {
       streak = 0;
       score += 1;
@@ -45,7 +40,6 @@ export function fuzzyScore(query: string, text: string): number | null {
     ti = found + 1;
   }
 
-  // Prefer earlier starts and shorter targets.
   score -= firstMatch * 0.1;
   score -= Math.max(0, t.length - q.length) * 0.05;
   return score;
@@ -56,11 +50,6 @@ function focusByLabel(label: string): void {
   el?.focus();
 }
 
-/**
- * Builds the command list from current store state. Commands cover: new todo,
- * jump to each project, switch view, focus search, open each focus area, and
- * open each focus slot.
- */
 export function buildCommands(store = getActiveStore()): Command[] {
   const state = store.getState();
   const commands: Command[] = [];
@@ -75,10 +64,10 @@ export function buildCommands(store = getActiveStore()): Command[] {
     },
   });
 
-  for (const view of ['board', 'calendar', 'focus'] as ActiveView[]) {
+  for (const view of ['board', 'calendar'] as ActiveView[]) {
     commands.push({
       id: `view-${view}`,
-      title: `Go to ${view === 'focus' ? 'Focus' : view === 'calendar' ? 'Calendar' : 'Board'}`,
+      title: `Go to ${view === 'calendar' ? 'Calendar' : 'Board'}`,
       hint: 'View',
       keywords: `switch view go ${view}`,
       run: () => store.getState().setActiveView(view),
@@ -94,30 +83,6 @@ export function buildCommands(store = getActiveStore()): Command[] {
       focusByLabel('Search todos');
     },
   });
-
-  for (const area of state.ui.focusAreas) {
-    commands.push({
-      id: `focus-area-${area.index}`,
-      title: `Open focus area ${area.index + 1}`,
-      hint: 'Focus',
-      keywords: `focus area ${area.index + 1}`,
-      run: () => {
-        focusByLabel(`Focus area ${area.index + 1}`);
-      },
-    });
-  }
-
-  for (const slot of state.ui.focusSlots) {
-    commands.push({
-      id: `focus-slot-${slot.index}`,
-      title: `Open focus slot ${slot.index + 1}`,
-      hint: 'Focus',
-      keywords: `focus slot ${slot.index + 1} 1-3-5`,
-      run: () => {
-        focusByLabel(`Add todo to focus slot ${slot.index + 1}`);
-      },
-    });
-  }
 
   for (const project of state.projects) {
     commands.push({

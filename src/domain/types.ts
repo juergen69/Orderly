@@ -38,13 +38,3 @@ export interface SubStep {
   order: string;
   createdAt: string;
 }
-
-export interface FocusArea {
-  index: number;
-  text: string;
-}
-
-export interface FocusSlot {
-  index: number;
-  todoId: string | null;
-}

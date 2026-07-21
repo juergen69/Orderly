@@ -3,8 +3,6 @@ import { TickerHost } from './features/TickerHost';
 import { ProjectsSidebar } from './features/projects/ProjectsSidebar';
 import { Board } from './features/board/Board';
 import { CalendarView } from './features/calendar/CalendarView';
-import { FocusPanel } from './features/focus-135/FocusPanel';
-import { FocusAreas } from './features/focus-areas/FocusAreas';
 import { SearchBar } from './features/search/SearchBar';
 import { TagsSidebar } from './features/tags/TagsSidebar';
 import { CommandPalette } from './features/command-palette/CommandPalette';
@@ -138,15 +136,6 @@ function App() {
           >
             Calendar
           </button>
-          <button
-            type="button"
-            className={styles.viewButton}
-            aria-pressed={activeView === 'focus'}
-            data-active={activeView === 'focus' || undefined}
-            onClick={() => setActiveView('focus')}
-          >
-            Focus
-          </button>
         </div>
       </header>
 
@@ -172,14 +161,9 @@ function App() {
             <section className={styles.boardRegion} aria-label="Board" role="region">
               <Board filterProjectId={selectedProjectId} onOpenTodo={setOpenTodoId} />
             </section>
-          ) : activeView === 'calendar' ? (
+          ) : (
             <section className={styles.boardRegion} aria-label="Calendar" role="region">
               <CalendarView onOpenTodo={setOpenTodoId} />
-            </section>
-          ) : (
-            <section className={styles.boardRegion} aria-label="Focus" role="region">
-              <FocusPanel onOpenTodo={setOpenTodoId} />
-              <FocusAreas />
             </section>
           )}
         </main>

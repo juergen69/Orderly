@@ -31,15 +31,13 @@ describe('store actions', () => {
     expect((await store.getState().repository.getProject(project.id))?.name).toBe('Job');
   });
 
-  it('deletes a project and cascades todos + reconciles focus slots', async () => {
+  it('deletes a project and cascades todos', async () => {
     const project = await store.getState().createProject('Work', '#22d3ee');
     const todo = await store.getState().createTodo({ projectId: project.id, title: 't' });
-    store.getState().setFocusSlot(0, todo.id);
     await store.getState().deleteProject(project.id, { mode: 'cascade' });
     expect(store.getState().projects).toHaveLength(0);
     expect(store.getState().todos).toHaveLength(0);
     expect(await store.getState().repository.getTodo(todo.id)).toBeNull();
-    expect(store.getState().ui.focusSlots[0]?.todoId).toBeNull();
   });
 
   it('reorders a project', async () => {
@@ -101,13 +99,11 @@ describe('store actions', () => {
     expect(store.getState().subSteps).toHaveLength(1);
   });
 
-  it('deleting a todo clears its sub-steps and reconciles focus slots', async () => {
+  it('deleting a todo clears its sub-steps', async () => {
     const todo = await store.getState().createTodo({ projectId: null, title: 't' });
     await store.getState().createSubStep(todo.id, 'one');
-    store.getState().setFocusSlot(2, todo.id);
     await store.getState().deleteTodo(todo.id);
     expect(store.getState().subSteps).toHaveLength(0);
-    expect(store.getState().ui.focusSlots[2]?.todoId).toBeNull();
   });
 
   it('selectTodosByProject filters correctly', async () => {
@@ -126,9 +122,8 @@ describe('store actions', () => {
     expect(split.archived.map((t) => t.id)).toEqual([old.id]);
   });
 
-  it('reconciles focus slots after replaceAll (import)', async () => {
+  it('replaceAll replaces all data', async () => {
     const todo = await store.getState().createTodo({ projectId: null, title: 'old' });
-    store.getState().setFocusSlot(0, todo.id);
 
     const importedTodo: Todo = {
       ...todo,
@@ -141,7 +136,6 @@ describe('store actions', () => {
       subSteps: [],
     });
     expect(store.getState().todos.map((t) => t.id)).toEqual(['imported-id']);
-    expect(store.getState().ui.focusSlots[0]?.todoId).toBeNull();
     expect(await store.getState().repository.getTodo('imported-id')).not.toBeNull();
   });
 });

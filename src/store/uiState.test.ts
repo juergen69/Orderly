@@ -2,7 +2,6 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import {
   loadUiState,
   saveUiState,
-  reconcileFocusSlots,
   defaultUiState,
 } from './uiState';
 
@@ -94,29 +93,9 @@ describe('uiState', () => {
     const ui = loadUiState();
     ui.activeView = 'calendar';
     ui.showAllRecurring = true;
-    ui.focusAreas[1] = { index: 1, text: 'Deep work' };
     saveUiState(ui);
     const reloaded = loadUiState();
     expect(reloaded.activeView).toBe('calendar');
     expect(reloaded.showAllRecurring).toBe(true);
-    expect(reloaded.focusAreas[1]?.text).toBe('Deep work');
-  });
-
-  it('reconcileFocusSlots clears stale refs but leaves matching refs', () => {
-    const slots = [
-      { index: 0, todoId: 'a' },
-      { index: 1, todoId: 'gone' },
-      { index: 2, todoId: null },
-    ];
-    const result = reconcileFocusSlots(slots, new Set(['a']));
-    expect(result[0]?.todoId).toBe('a');
-    expect(result[1]?.todoId).toBeNull();
-    expect(result[2]?.todoId).toBeNull();
-  });
-
-  it('reconcileFocusSlots preserves focus areas (separate concept)', () => {
-    const slots = [{ index: 0, todoId: 'gone' }];
-    reconcileFocusSlots(slots, new Set());
-    expect(slots[0]?.todoId).toBe('gone');
   });
 });
