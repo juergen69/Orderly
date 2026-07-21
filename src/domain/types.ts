@@ -27,6 +27,7 @@ export interface Todo {
   reminderLead: string | null;
   tags: string[];
   isFrog: boolean;
+  tier?: 1 | 3 | 5;
 }
 
 export interface SubStep {
@@ -46,5 +47,4 @@ export interface FocusArea {
 export interface FocusSlot {
   index: number;
   todoId: string | null;
-  tier?: 1 | 3 | 5;
 }

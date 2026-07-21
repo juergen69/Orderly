@@ -18,6 +18,12 @@ const RECURRENCE_LABEL: Record<Todo['recurrence'], string> = {
   yearly: 'Yearly',
 };
 
+const TIER_ICONS: Record<1 | 3 | 5, string> = {
+  1: '🔥',
+  3: '⚡',
+  5: '💧',
+};
+
 export interface CardProps {
   todo: Todo;
   project: Project | null;
@@ -26,9 +32,11 @@ export interface CardProps {
   onOpenTodo?: (id: string) => void;
   /** Max number of tag chips before collapsing into a +N overflow. */
   maxTags?: number;
+  onCycleTier?: (id: string) => void;
+  tierDisabled?: boolean;
 }
 
-export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTags = 3 }: CardProps) {
+export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTags = 3, onCycleTier, tierDisabled }: CardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: todo.id });
   const [expanded, setExpanded] = useState(false);
@@ -96,6 +104,22 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
         >
           🐸
         </button>
+        {onCycleTier && (
+          <button
+            type="button"
+            className={styles.tier}
+            data-tier={todo.tier}
+            disabled={tierDisabled}
+            aria-label={todo.tier ? `Change tier (currently ${todo.tier})` : 'Assign tier'}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onCycleTier(todo.id);
+            }}
+          >
+            {todo.tier ? TIER_ICONS[todo.tier] : '+'}
+          </button>
+        )}
       </div>
 
       <p className={styles.title}>

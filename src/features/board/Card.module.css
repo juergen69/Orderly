@@ -67,6 +67,36 @@
   opacity: 1;
 }
 
+.tier {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  line-height: 1;
+  opacity: 0.4;
+  padding: 0;
+}
+
+.tier[data-tier='1'] {
+  color: var(--color-error);
+  opacity: 1;
+}
+
+.tier[data-tier='3'] {
+  color: var(--color-accent);
+  opacity: 1;
+}
+
+.tier[data-tier='5'] {
+  color: var(--color-primary);
+  opacity: 1;
+}
+
+.tier[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.2;
+}
+
 .title {
   margin: 0;
   font-size: var(--font-size-sm);
