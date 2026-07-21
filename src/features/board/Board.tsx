@@ -36,7 +36,7 @@ function isStatus(value: string): value is Status {
   return value === 'todo' || value === 'inProgress' || value === 'done';
 }
 
-function nextTodoTier(current: 1 | 3 | 5 | undefined, todos: Todo[]): 1 | 3 | 5 | null {
+export function nextTodoTier(current: 1 | 3 | 5 | undefined, todos: Todo[]): 1 | 3 | 5 | null {
   const counts: Record<1 | 3 | 5, number> = { 1: 0, 3: 0, 5: 0 };
   for (const t of todos) {
     if (t.tier === 1 || t.tier === 3 || t.tier === 5) {
@@ -52,7 +52,7 @@ function nextTodoTier(current: 1 | 3 | 5 | undefined, todos: Todo[]): 1 | 3 | 5 
   }
 
   const currentIndex = TIER_CYCLE.indexOf(current);
-  if (currentIndex + 1 < TIER_CYCLE.length) {
+  if (currentIndex >= 0 && currentIndex + 1 < TIER_CYCLE.length) {
     return TIER_CYCLE[currentIndex + 1] as 1 | 3 | 5;
   }
   return null;
