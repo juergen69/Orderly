@@ -321,7 +321,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
             <span className={styles.legendIcon} aria-hidden="true">💧</span> 5 small tasks
           </span>
           <span className={styles.legendItem} data-frog>
-            <span className={styles.legendIcon} aria-hidden="true">🐸</span> Eat the frog (most important task)
+            <span className={styles.legendIcon} aria-hidden="true">🐸</span> Eat the frog (most dreaded — do it first)
           </span>
         </div>
         <DragOverlay>
