@@ -46,4 +46,5 @@ export interface FocusArea {
 export interface FocusSlot {
   index: number;
   todoId: string | null;
+  tier?: 1 | 3 | 5;
 }
