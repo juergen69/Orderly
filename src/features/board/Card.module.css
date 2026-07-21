@@ -87,10 +87,6 @@
   opacity: 1;
 }
 
-.tier[data-tier]:hover:not(:disabled) {
-  filter: none;
-}
-
 .tier[data-tier='1'] {
   color: var(--color-error);
   opacity: 1;
