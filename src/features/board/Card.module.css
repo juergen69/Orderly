@@ -84,8 +84,11 @@
 }
 
 .tier:hover:not(:disabled) {
-  filter: none;
   opacity: 1;
+}
+
+.tier[data-tier]:hover:not(:disabled) {
+  filter: none;
 }
 
 .tier[data-tier='1'] {
