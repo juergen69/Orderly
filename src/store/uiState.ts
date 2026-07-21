@@ -6,6 +6,7 @@ const SCHEMA_VERSION = 1;
 export interface UiState {
   activeView: ActiveView;
   showAllRecurring: boolean;
+  focusMode: boolean;
   /** Transient header-search query (not persisted). */
   searchQuery: string;
   /** Transient tag-filter selection (not persisted). */
@@ -20,6 +21,7 @@ export function defaultUiState(): UiState {
   return {
     activeView: 'board',
     showAllRecurring: false,
+    focusMode: false,
     searchQuery: '',
     selectedTags: [],
     selectedProjectId: null,
@@ -50,6 +52,10 @@ export function loadUiState(): UiState {
         typeof parsed['showAllRecurring'] === 'boolean'
           ? parsed['showAllRecurring']
           : false,
+      focusMode:
+        typeof parsed['focusMode'] === 'boolean'
+          ? parsed['focusMode']
+          : false,
       searchQuery: '',
       selectedTags: [],
       selectedProjectId: null,
@@ -69,6 +75,7 @@ export function saveUiState(state: UiState): void {
       schemaVersion: SCHEMA_VERSION,
       activeView: state.activeView,
       showAllRecurring: state.showAllRecurring,
+      focusMode: state.focusMode,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {

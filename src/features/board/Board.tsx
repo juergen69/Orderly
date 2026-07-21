@@ -88,6 +88,8 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const projects = storeRef((s) => s.projects);
   const subSteps = storeRef((s) => s.subSteps);
   const showAllRecurring = storeRef((s) => s.ui.showAllRecurring);
+  const focusMode = storeRef((s) => s.ui.focusMode);
+  const setFocusMode = storeRef((s) => s.setFocusMode);
   const searchQuery = storeRef((s) => s.ui.searchQuery);
   const selectedTags = storeRef((s) => s.ui.selectedTags);
   const moveTodo = storeRef((s) => s.moveTodo);
@@ -117,8 +119,11 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
     if (selectedTags.length > 0) {
       result = result.filter((t) => selectedTags.every((tag) => t.tags.includes(tag)));
     }
+    if (focusMode) {
+      result = result.filter((t) => t.isFrog || (t.tier === 1 || t.tier === 3 || t.tier === 5));
+    }
     return result;
-  }, [allTodos, filterProjectId, showAllRecurring, searchQuery, selectedTags]);
+  }, [allTodos, filterProjectId, showAllRecurring, focusMode, searchQuery, selectedTags]);
 
   const todosByStatus = useMemo(() => {
     const map = new Map<Status, Todo[]>();
@@ -212,7 +217,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
       if (next === null && todo.tier === undefined) return;
       void setTodoTier(id, next);
     },
-    [filteredTodos, setTodoTier],
+    [filteredTodos, setTodoTier, focusMode],
   );
 
   useEffect(() => {
@@ -285,6 +290,15 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
     <div className={styles.boardWrapper}>
       <div className={styles.toolbar}>
         <RecurringFilter />
+        <button
+          type="button"
+          className={styles.focusModePill}
+          data-active={focusMode || undefined}
+          onClick={() => setFocusMode(!focusMode)}
+          aria-pressed={focusMode}
+        >
+          🎯 Focus mode
+        </button>
       </div>
       <DndContext
         sensors={sensors}

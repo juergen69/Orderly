@@ -76,6 +76,16 @@
   color: var(--color-text-tertiary);
   opacity: 0.5;
   padding: 0;
+  filter: grayscale(1);
+}
+
+.tier[data-tier] {
+  filter: none;
+}
+
+.tier:hover:not(:disabled) {
+  filter: none;
+  opacity: 1;
 }
 
 .tier[data-tier='1'] {

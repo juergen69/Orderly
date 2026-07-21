@@ -54,6 +54,7 @@ export interface StoreState {
 
   setActiveView(view: ActiveView): void;
   setShowAllRecurring(value: boolean): void;
+  setFocusMode(value: boolean): void;
   setSearchQuery(query: string): void;
   setSelectedTags(tags: string[]): void;
   addTagFilter(tag: string): void;
@@ -368,6 +369,14 @@ export function createStore(options: CreateStoreOptions) {
     setShowAllRecurring(value) {
       set((state) => {
         const ui = { ...state.ui, showAllRecurring: value };
+        saveUiState(ui);
+        return { ui };
+      });
+    },
+
+    setFocusMode(value) {
+      set((state) => {
+        const ui = { ...state.ui, focusMode: value };
         saveUiState(ui);
         return { ui };
       });
