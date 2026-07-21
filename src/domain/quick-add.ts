@@ -60,26 +60,26 @@ export function parseQuickAdd(
     return result;
   }
 
-  const tokens = input.split(/\s+/);
+  const tokens = input.split(/\s+/).filter((token): token is string => token !== undefined);
   const titleParts: string[] = [];
 
   let i = 0;
   while (i < tokens.length) {
     const token = tokens[i];
 
-    if (token.startsWith('#')) {
-      const tag = token.slice(1).trim().toLowerCase();
+    if (token!.startsWith('#')) {
+      const tag = token!.slice(1).trim().toLowerCase();
       if (tag.length > 0 && !result.tags.includes(tag)) {
         result.tags.push(tag);
       } else if (tag.length === 0) {
-        titleParts.push(token);
+        titleParts.push(token!);
       }
       i++;
       continue;
     }
 
-    if (token.startsWith('@')) {
-      const name = token.slice(1).trim();
+    if (token!.startsWith('@')) {
+      const name = token!.slice(1).trim();
       if (name.length > 0) {
         let bestMatch: Project | undefined;
         let bestLen = 0;
@@ -87,7 +87,7 @@ export function parseQuickAdd(
         for (let len = 1; i + len <= tokens.length; len++) {
           const parts = [name];
           for (let j = 1; j < len; j++) {
-            parts.push(tokens[i + j]);
+            parts.push(tokens[i + j]!);
           }
           const candidate = parts.join(' ');
           const found = projects.find(
@@ -105,16 +105,16 @@ export function parseQuickAdd(
           continue;
         }
 
-        titleParts.push(token);
+        titleParts.push(token!);
       } else {
-        titleParts.push(token);
+        titleParts.push(token!);
       }
       i++;
       continue;
     }
 
-    if (token.startsWith('!')) {
-      const due = resolveDueToken(token, today);
+    if (token!.startsWith('!')) {
+      const due = resolveDueToken(token!, today);
       if (due !== null) {
         result.dueDate = due;
         i++;
@@ -122,7 +122,7 @@ export function parseQuickAdd(
       }
     }
 
-    titleParts.push(token);
+    titleParts.push(token!);
     i++;
   }
 

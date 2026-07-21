@@ -520,7 +520,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
                         }
                         if (projectHighlightIndex >= 0 && projectHighlightIndex < projectSuggestions.length) {
                           e.preventDefault();
-                          const accepted = projectSuggestions[projectHighlightIndex];
+                          const accepted = projectSuggestions[projectHighlightIndex]!;
                           acceptProjectSuggestion(accepted);
                           if (e.key === 'Enter') {
                             requestAnimationFrame(() => void handleComposerSubmit());

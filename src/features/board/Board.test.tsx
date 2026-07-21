@@ -101,7 +101,7 @@ describe('Board', () => {
   });
 
   it('shows project autocomplete when typing @ in composer', async () => {
-    const project = await store.getState().createProject('Work', '#22d3ee');
+    await store.getState().createProject('Work', '#22d3ee');
     render(<Board filterProjectId={null} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
@@ -111,11 +111,11 @@ describe('Board', () => {
     await userEvent.type(textarea, '@W');
     const suggestionList = document.querySelector('[role="listbox"]');
     expect(suggestionList).toBeInTheDocument();
-    expect(within(suggestionList!).getByText('Work')).toBeInTheDocument();
+    expect(within(suggestionList as HTMLElement).getByText('Work')).toBeInTheDocument();
   });
 
   it('accepting a project suggestion inserts full project name', async () => {
-    const project = await store.getState().createProject('Work', '#22d3ee');
+    await store.getState().createProject('Work', '#22d3ee');
     render(<Board filterProjectId={null} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
@@ -126,7 +126,7 @@ describe('Board', () => {
     const suggestionList = document.querySelector('[role="listbox"]');
     expect(suggestionList).toBeInTheDocument();
 
-    await userEvent.click(within(suggestionList!).getByText('Work'));
+    await userEvent.click(within(suggestionList as HTMLElement).getByText('Work'));
     expect(textarea).toHaveValue('@Work ');
   });
 
@@ -148,7 +148,7 @@ describe('Board', () => {
   });
 
   it('closes autocomplete on Escape without closing dialog', async () => {
-    const project = await store.getState().createProject('Work', '#22d3ee');
+    await store.getState().createProject('Work', '#22d3ee');
     render(<Board filterProjectId={null} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
