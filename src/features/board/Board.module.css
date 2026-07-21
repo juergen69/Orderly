@@ -223,3 +223,7 @@
 .legendItem[data-tier='5'] .legendIcon {
   color: var(--color-primary);
 }
+
+.legendItem[data-frog] .legendIcon {
+  color: var(--color-success);
+}

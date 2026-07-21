@@ -310,7 +310,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
             />
           ))}
         </div>
-        <div className={styles.legend} aria-label="Tier legend">
+        <div className={styles.legend} aria-label="Legend">
           <span className={styles.legendItem} data-tier="1">
             <span className={styles.legendIcon} aria-hidden="true">🔥</span> 1 big task
           </span>
@@ -319,6 +319,9 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
           </span>
           <span className={styles.legendItem} data-tier="5">
             <span className={styles.legendIcon} aria-hidden="true">💧</span> 5 small tasks
+          </span>
+          <span className={styles.legendItem} data-frog>
+            <span className={styles.legendIcon} aria-hidden="true">🐸</span> Eat the frog (most important task)
           </span>
         </div>
         <DragOverlay>
