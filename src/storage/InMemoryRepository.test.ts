@@ -15,6 +15,7 @@ describe('InMemoryRepository contract', () => {
   );
 });
 
-it('can be instantiated directly', () => {
-  expect(new InMemoryRepository()).toBeDefined();
+it('exposes repository methods', () => {
+  const repo = new InMemoryRepository();
+  expect(typeof repo.replaceAll).toBe('function');
 });
