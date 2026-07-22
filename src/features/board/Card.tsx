@@ -21,8 +21,27 @@ const RECURRENCE_LABEL: Record<Todo['recurrence'], string> = {
 const TIER_ICONS: Record<1 | 3 | 5, string> = {
   1: '🔥',
   3: '⚡',
-  5: '💧',
+   5: '💧',
 };
+
+function hasOverdueDueDate(todo: Todo): boolean {
+  return todo.dueDate !== null && todo.status !== 'done' && isBeforeToday(todo.dueDate);
+}
+
+function computeNextOccurrence(todo: Todo): string | null {
+  return todo.recurrence !== 'none' && todo.dueDate !== null
+    ? advance(todo.dueDate, todo.recurrence)
+    : null;
+}
+
+function computeSnippet(description: string): string {
+  return description.trim().length > 0 ? truncate(description) : '';
+}
+
+function computeTagVisibility(tags: string[], maxTags: number): { visibleTags: string[]; overflowCount: number } {
+  const visibleTags = tags.slice(0, maxTags);
+  return { visibleTags, overflowCount: tags.length - visibleTags.length };
+}
 
 export interface CardProps {
   todo: Todo;
@@ -50,17 +69,11 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
   const prog = useMemo(() => progress(subSteps), [subSteps]);
 
   const recurrenceLabel = RECURRENCE_LABEL[todo.recurrence];
-  const overdue =
-    todo.dueDate !== null && todo.status !== 'done' && isBeforeToday(todo.dueDate);
-  const nextOccurrence =
-    todo.recurrence !== 'none' && todo.dueDate !== null
-      ? advance(todo.dueDate, todo.recurrence)
-      : null;
+  const overdue = hasOverdueDueDate(todo);
+  const nextOccurrence = computeNextOccurrence(todo);
+  const snippet = computeSnippet(todo.description);
 
-  const snippet = todo.description.trim().length > 0 ? truncate(todo.description) : '';
-
-  const visibleTags = todo.tags.slice(0, maxTags);
-  const overflowCount = todo.tags.length - visibleTags.length;
+  const { visibleTags, overflowCount } = computeTagVisibility(todo.tags, maxTags);
 
   return (
     <li
