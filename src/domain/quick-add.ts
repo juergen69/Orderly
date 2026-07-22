@@ -37,17 +37,108 @@ function resolveDueToken(token: string, today: Date): string | null {
   return null;
 }
 
+function safeParseDate(iso: string): Date | null {
+  try {
+    return parseDate(iso);
+  } catch {
+    return null;
+  }
+}
+
+function addTag(token: string, result: QuickAddResult, titleParts: string[]): void {
+  const tag = token.slice(1).trim().toLowerCase();
+  if (tag.length > 0 && !result.tags.includes(tag)) {
+    result.tags.push(tag);
+  } else if (tag.length === 0) {
+    titleParts.push(token);
+  }
+}
+
+function matchProject(
+  startIndex: number,
+  tokens: string[],
+  projects: Project[],
+): { projectId: string; advance: number } | null {
+  const name = tokens[startIndex]!.slice(1).trim();
+  let bestMatch: Project | undefined;
+  let bestLen = 0;
+
+  for (let len = 1; startIndex + len <= tokens.length; len++) {
+    const parts = [name];
+    for (let j = 1; j < len; j++) {
+      parts.push(tokens[startIndex + j]!);
+    }
+    const candidate = parts.join(' ');
+    const found = projects.find(
+      (p) => p.name.trim().toLowerCase() === candidate.toLowerCase(),
+    );
+    if (found) {
+      bestMatch = found;
+      bestLen = len;
+    }
+  }
+
+  if (bestMatch) {
+    return { projectId: bestMatch.id, advance: bestLen };
+  }
+  return null;
+}
+
+function addProjectReference(
+  index: number,
+  tokens: string[],
+  projects: Project[],
+  result: QuickAddResult,
+  titleParts: string[],
+): number {
+  const match = matchProject(index, tokens, projects);
+  if (match) {
+    result.projectId = match.projectId;
+    return match.advance;
+  }
+  titleParts.push(tokens[index]!);
+  return 1;
+}
+
+function addDueDate(token: string, today: Date, result: QuickAddResult, titleParts: string[]): number {
+  const due = resolveDueToken(token, today);
+  if (due !== null) {
+    result.dueDate = due;
+    return 1;
+  }
+  titleParts.push(token);
+  return 1;
+}
+
+function processToken(
+  token: string,
+  index: number,
+  tokens: string[],
+  projects: Project[],
+  today: Date,
+  result: QuickAddResult,
+  titleParts: string[],
+): number {
+  if (token.startsWith('#')) {
+    addTag(token, result, titleParts);
+    return 1;
+  }
+  if (token.startsWith('@')) {
+    return addProjectReference(index, tokens, projects, result, titleParts);
+  }
+  if (token.startsWith('!')) {
+    return addDueDate(token, today, result, titleParts);
+  }
+  titleParts.push(token);
+  return 1;
+}
+
 export function parseQuickAdd(
   input: string,
   projects: Project[],
   todayIso: string,
 ): QuickAddResult {
-  let today: Date;
-  try {
-    today = parseDate(todayIso);
-  } catch {
-    today = new Date();
-  }
+  const today = safeParseDate(todayIso) ?? new Date();
 
   const result: QuickAddResult = {
     title: '',
@@ -65,65 +156,9 @@ export function parseQuickAdd(
 
   let i = 0;
   while (i < tokens.length) {
-    const token = tokens[i];
-
-    if (token!.startsWith('#')) {
-      const tag = token!.slice(1).trim().toLowerCase();
-      if (tag.length > 0 && !result.tags.includes(tag)) {
-        result.tags.push(tag);
-      } else if (tag.length === 0) {
-        titleParts.push(token!);
-      }
-      i++;
-      continue;
-    }
-
-    if (token!.startsWith('@')) {
-      const name = token!.slice(1).trim();
-      if (name.length > 0) {
-        let bestMatch: Project | undefined;
-        let bestLen = 0;
-
-        for (let len = 1; i + len <= tokens.length; len++) {
-          const parts = [name];
-          for (let j = 1; j < len; j++) {
-            parts.push(tokens[i + j]!);
-          }
-          const candidate = parts.join(' ');
-          const found = projects.find(
-            (p) => p.name.trim().toLowerCase() === candidate.toLowerCase(),
-          );
-          if (found) {
-            bestMatch = found;
-            bestLen = len;
-          }
-        }
-
-        if (bestMatch) {
-          result.projectId = bestMatch.id;
-          i += bestLen;
-          continue;
-        }
-
-        titleParts.push(token!);
-      } else {
-        titleParts.push(token!);
-      }
-      i++;
-      continue;
-    }
-
-    if (token!.startsWith('!')) {
-      const due = resolveDueToken(token!, today);
-      if (due !== null) {
-        result.dueDate = due;
-        i++;
-        continue;
-      }
-    }
-
-    titleParts.push(token!);
-    i++;
+    const token = tokens[i]!;
+    const advance = processToken(token, i, tokens, projects, today, result, titleParts);
+    i += advance;
   }
 
   result.title = titleParts.join(' ').trim();
