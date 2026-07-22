@@ -1,4 +1,4 @@
-import { describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { InMemoryRepository } from './InMemoryRepository';
 import { repositoryContractTest } from './contract.test';
 
@@ -13,4 +13,9 @@ describe('InMemoryRepository contract', () => {
     () => new InMemoryRepository(),
     () => new FailingReplaceAllRepository(),
   );
+});
+
+it('exposes repository methods', () => {
+  const repo = new InMemoryRepository();
+  expect(typeof repo.replaceAll).toBe('function');
 });
