@@ -18,7 +18,7 @@ export function last(existing: string[]): string {
   if (existing.length === 0) {
     return INITIAL_KEY;
   }
-  const sorted = [...existing].sort();
+  const sorted = [...existing].sort((a, b) => a.localeCompare(b));
   const lastKey = sorted[sorted.length - 1]!;
   return after(lastKey);
 }

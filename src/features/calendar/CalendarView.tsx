@@ -39,7 +39,7 @@ export function CalendarView({ onOpenTodo }: CalendarViewProps) {
   const allTags = useMemo(() => {
     const set = new Set<string>();
     for (const t of allTodos) for (const tag of t.tags) set.add(tag);
-    return [...set].sort();
+    return [...set].sort((a, b) => a.localeCompare(b));
   }, [allTodos]);
 
   // Compose filters (AND): recurring-visibility, project, search, tag.
