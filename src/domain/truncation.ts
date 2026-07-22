@@ -30,7 +30,7 @@ export function truncate(text: string, limit: number = DEFAULT_TRUNCATE_LIMIT): 
     }
   }
 
-  let result = text.slice(0, boundary).replace(/\s+$/u, '');
+  let result = text.slice(0, boundary).trimEnd();
   if (result.length === 0) {
     result = text.slice(0, limit);
   }

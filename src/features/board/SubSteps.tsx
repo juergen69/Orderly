@@ -62,7 +62,7 @@ export function SubSteps({ todoId }: { todoId: string }) {
     // Compute neighbours in the target position (excluding the dragged item)
     // and write a single fractional order via the store.
     const without = subSteps.filter((s) => s.id !== active.id);
-    const insertAt = from < to ? to : to;
+    const insertAt = to;
     const before = without[insertAt - 1];
     const after = without[insertAt];
     void reorderSubStep(String(active.id), before?.id, after?.id);
