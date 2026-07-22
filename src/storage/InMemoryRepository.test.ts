@@ -1,4 +1,4 @@
-import { describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { InMemoryRepository } from './InMemoryRepository';
 import { repositoryContractTest } from './contract.test';
 
@@ -13,4 +13,8 @@ describe('InMemoryRepository contract', () => {
     () => new InMemoryRepository(),
     () => new FailingReplaceAllRepository(),
   );
+});
+
+it('can be instantiated directly', () => {
+  expect(new InMemoryRepository()).toBeDefined();
 });
