@@ -173,7 +173,7 @@ function App() {
         )}
       </div>
 
-      {sidebarOpen && <div className={styles.backdrop} data-visible onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className={styles.backdrop} data-visible role="button" tabIndex={0} onClick={() => setSidebarOpen(false)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSidebarOpen(false); } }} />}
 
       <TickerHost />
 
