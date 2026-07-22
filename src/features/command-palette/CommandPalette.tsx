@@ -75,11 +75,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   };
 
   return (
-    <div
+    <button
+      type="button"
       className={styles.overlay}
-      role="presentation"
       onMouseDown={(e) => {
-        // Close when clicking the backdrop (not the dialog).
         if (e.target === e.currentTarget) onClose();
       }}
     >
@@ -113,8 +112,15 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               aria-selected={i === active}
               className={styles.item}
               data-active={i === active || undefined}
+              tabIndex={i === active ? 0 : -1}
               onMouseEnter={() => setActive(i)}
               onClick={() => runCommand(cmd)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  runCommand(cmd);
+                }
+              }}
             >
               <span className={styles.itemTitle}>{cmd.title}</span>
               {cmd.hint && <span className={styles.itemHint}>{cmd.hint}</span>}
@@ -122,6 +128,6 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           ))}
         </ul>
       </div>
-    </div>
+    </button>
   );
 }
