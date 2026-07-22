@@ -7,7 +7,7 @@ export interface UrlToken {
 const URL_PROTOCOL = '(https?:\\/\\/|www\\.)';
 const URL_BODY = '[^\\s<>""()]+';
 
-const TRAILING_PUNCTUATION = /[.,;:!?]+$/;
+const TRAILING_PUNCTUATION = '.,;:!?';
 
 export const URL_REGEX = new RegExp(`${URL_PROTOCOL}${URL_BODY}`, 'gi');
 
@@ -23,9 +23,12 @@ export function findUrls(text: string): UrlToken[] {
     const start = match.index;
     let value = match[0];
     let end = start + value.length;
-    const trailing = TRAILING_PUNCTUATION.exec(value);
-    if (trailing) {
-      value = value.slice(0, trailing.index);
+    let trailingEnd = value.length;
+    while (trailingEnd > 0 && TRAILING_PUNCTUATION.includes(value[trailingEnd - 1]!)) {
+      trailingEnd--;
+    }
+    if (trailingEnd < value.length) {
+      value = value.slice(0, trailingEnd);
       end = start + value.length;
     }
     if (value.length > 0) {
