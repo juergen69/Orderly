@@ -99,7 +99,7 @@ export function ConfirmDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        onKeyDown={handleKeyDown}
+        onKeyDown={handleKeyDown} // NOSONAR(S6847): dialog container needs keyboard trap/Escape
       >
         <h2 id={titleId} className={styles.title}>
           {title}
