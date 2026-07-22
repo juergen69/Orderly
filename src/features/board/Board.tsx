@@ -73,6 +73,23 @@ function allTiersFull(todos: Todo[]): boolean {
   return counts[1] >= TIER_CAPACITY[1] && counts[3] >= TIER_CAPACITY[3] && counts[5] >= TIER_CAPACITY[5];
 }
 
+function trapFocusInDialog(event: KeyboardEvent, dialog: HTMLDivElement): void {
+  const focusable = dialog.querySelectorAll<HTMLElement>(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+  );
+  if (focusable.length === 0) return;
+  const first = focusable[0]!;
+  const last = focusable[focusable.length - 1]!;
+  const current = document.activeElement;
+  if (event.shiftKey && current === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && current === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 export interface BoardProps {
   /** Active project filter; null shows all projects. */
   filterProjectId: string | null;
@@ -260,20 +277,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
         return;
       }
       if (key === 'tab' && composerOpen && dialogRef.current) {
-        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        );
-        if (focusable.length === 0) return;
-        const first = focusable[0]!;
-        const last = focusable[focusable.length - 1]!;
-        const current = document.activeElement;
-        if (event.shiftKey && current === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && current === last) {
-          event.preventDefault();
-          first.focus();
-        }
+        trapFocusInDialog(event, dialogRef.current);
       }
     };
     window.addEventListener('keydown', handler);
@@ -361,6 +365,60 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
       textarea.setSelectionRange(newCursor, newCursor);
     });
   }, []);
+
+  const handleComposerKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const isSuggesting = projectSuggestions !== null && projectSuggestions.length > 0;
+      if (isSuggesting) {
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            setProjectHighlightIndex((prev) =>
+              Math.min(prev + 1, projectSuggestions.length - 1),
+            );
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            setProjectHighlightIndex((prev) => Math.max(prev - 1, 0));
+            break;
+          case 'Escape':
+            e.preventDefault();
+            setProjectSuggestions(null);
+            setProjectHighlightIndex(-1);
+            projectQueryStartRef.current = -1;
+            break;
+          default:
+            if (
+              e.key === 'Enter'
+              && projectHighlightIndex >= 0
+              && projectHighlightIndex < projectSuggestions.length
+            ) {
+              e.preventDefault();
+              const accepted = projectSuggestions[projectHighlightIndex]!;
+              acceptProjectSuggestion(accepted);
+              requestAnimationFrame(() => void handleComposerSubmit());
+            } else if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              void handleComposerSubmit();
+            }
+            break;
+        }
+        return;
+      }
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        void handleComposerSubmit();
+      }
+    },
+    [
+      projectSuggestions,
+      projectHighlightIndex,
+      setProjectHighlightIndex,
+      setProjectSuggestions,
+      acceptProjectSuggestion,
+      handleComposerSubmit,
+    ],
+  );
 
   return (
     <div className={styles.boardWrapper}>
@@ -495,45 +553,8 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
                     className={styles.sheetInput}
                     placeholder="Add card…"
                     value={composerDraft}
-                    onChange={handleComposerChange}
-                    onKeyDown={(e) => {
-                      const isSuggesting =
-                        projectSuggestions !== null && projectSuggestions.length > 0;
-                      if (isSuggesting) {
-                        if (e.key === 'ArrowDown') {
-                          e.preventDefault();
-                          setProjectHighlightIndex((prev) =>
-                            Math.min(prev + 1, projectSuggestions.length - 1),
-                          );
-                          return;
-                        }
-                        if (e.key === 'ArrowUp') {
-                          e.preventDefault();
-                          setProjectHighlightIndex((prev) => Math.max(prev - 1, 0));
-                          return;
-                        }
-                        if (e.key === 'Escape') {
-                          e.preventDefault();
-                          setProjectSuggestions(null);
-                          setProjectHighlightIndex(-1);
-                          projectQueryStartRef.current = -1;
-                          return;
-                        }
-                        if (projectHighlightIndex >= 0 && projectHighlightIndex < projectSuggestions.length) {
-                          e.preventDefault();
-                          const accepted = projectSuggestions[projectHighlightIndex]!;
-                          acceptProjectSuggestion(accepted);
-                          if (e.key === 'Enter') {
-                            requestAnimationFrame(() => void handleComposerSubmit());
-                          }
-                          return;
-                        }
-                      }
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        void handleComposerSubmit();
-                      }
-                    }}
+                     onChange={handleComposerChange}
+                     onKeyDown={handleComposerKeyDown}
                   />
                 </label>
                 {projectSuggestions !== null && (
