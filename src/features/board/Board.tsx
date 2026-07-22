@@ -442,10 +442,12 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
         +
       </button>
       {composerOpen ? (
-        <div
+        <button
+          type="button"
           className={styles.sheetBackdrop}
-          role="presentation"
-          onClick={() => setComposerOpen(false)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setComposerOpen(false);
+          }}
         >
           <div
             ref={dialogRef}
@@ -453,7 +455,6 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Add card"
-            onClick={(e) => e.stopPropagation()}
           >
             <header className={styles.sheetHeader}>
               <span className={styles.sheetTitle}>New card</span>
@@ -580,7 +581,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
               </button>
             </footer>
           </div>
-        </div>
+        </button>
       ) : null}
     </div>
   );

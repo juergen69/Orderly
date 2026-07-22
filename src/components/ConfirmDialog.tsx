@@ -86,9 +86,10 @@ export function ConfirmDialog({
   );
 
   return (
-    <div
+    <button
+      type="button"
       className={styles.overlay}
-      onMouseDown={(event) => {
+      onClick={(event) => {
         if (event.target === event.currentTarget) onCancel();
       }}
     >
@@ -118,6 +119,6 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </button>
   );
 }

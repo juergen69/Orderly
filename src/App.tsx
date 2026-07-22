@@ -158,11 +158,11 @@ function App() {
 
         <main className={styles.main}>
           {activeView === 'board' ? (
-            <section className={styles.boardRegion} aria-label="Board" role="region">
+            <section className={styles.boardRegion} aria-label="Board">
               <Board filterProjectId={selectedProjectId} onOpenTodo={setOpenTodoId} />
             </section>
           ) : (
-            <section className={styles.boardRegion} aria-label="Calendar" role="region">
+            <section className={styles.boardRegion} aria-label="Calendar">
               <CalendarView onOpenTodo={setOpenTodoId} />
             </section>
           )}
