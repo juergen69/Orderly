@@ -85,7 +85,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const existingTags = useMemo(() => {
     const set = new Set<string>();
     for (const t of allTodos) for (const tag of t.tags) set.add(tag);
-    return [...set].sort();
+    return [...set].sort((a, b) => a.localeCompare(b));
   }, [allTodos]);
 
   const tagSuggestions = useMemo(() => {
