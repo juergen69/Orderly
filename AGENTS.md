@@ -114,6 +114,82 @@ production build output (the `dist` directory). To build and publish:
 
 For future deployments, use the `deploy` skill: `load skill deploy`.
 
+## SonarCloud Issue Remediation Workflow
+
+Use this workflow for each SonarCloud security/vulnerability/code-smell issue.
+
+### 1. Retrieve issues
+
+Fetch the issue list from the SonarCloud API:
+
+```bash
+curl -s "https://sonarcloud.io/api/issues/search?componentKeys=juergen69_Orderly&ps=100" | python3 -m json.tool > /tmp/sonar-issues.json
+```
+
+- Filter for `"type": "VULNERABILITY"` or `"impactSoftwareQualities": ["SECURITY"]` and status `OPEN` / `CONFIRMED`.
+- Note the `component` (file), `line`, `rule`, `message`, and `key` fields.
+
+### 2. Create a dedicated branch
+
+```bash
+git checkout main
+git checkout -b hotfix/sonar-<rule>-<short-location>
+```
+
+### 3. Fix the issue
+
+- Implement the minimal correct change.
+- Do not introduce unrelated refactors.
+
+### 4. Validate
+
+```bash
+npm run typecheck
+npm run test
+```
+
+All tests must pass before creating a PR.
+
+### 5. Create a PR
+
+```bash
+git add .
+git commit -m "fix: address <rule> in <file>"
+git push -u origin hotfix/sonar-<rule>-<short-location>
+
+gh pr create --base main --title "fix: <rule> in <file>" --body "## SonarCloud Issue
+
+- Rule: <rule>
+- File: <file>:<line>
+- Message: <message>
+
+## Summary
+
+<brief explanation of fix>
+
+## Validation
+
+- npm run typecheck
+- npm run test"
+```
+
+### 6. kilo-code-bot review loop (same as substeps)
+
+After opening the PR, fetch and read the bot review comments:
+
+```bash
+gh api repos/<owner>/<repo>/pulls/<N>/comments
+gh api repos/<owner>/<repo>/issues/<N>/comments
+```
+
+- If issues are found: fix ALL, commit, push, and wait for re-review.
+- Only merge when the re-review summary says: **"No Issues Found | Recommendation: Merge"**.
+- Merge with: `gh pr merge <N> --merge --delete-branch`
+
+### 7. Deploy
+
+After merge, deploy as specified in the **Deployment** section above.
+
 ## Coding Rules
 
 The following rules are derived from recurring kilo-code-bot review findings across all PRs. Follow them to avoid repetitive fixes.
