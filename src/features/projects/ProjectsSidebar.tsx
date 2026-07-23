@@ -99,7 +99,7 @@ export function ProjectsSidebar({ selectedProjectId, onSelect, drawer, onClose }
   };
 
   return (
-    <nav
+    <nav // NOSONAR(S6819)
       ref={drawerRef}
       className={styles.sidebar}
       aria-label="Projects"

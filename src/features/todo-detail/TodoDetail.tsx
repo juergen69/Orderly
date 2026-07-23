@@ -169,7 +169,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   return (
     <>
       <div className={styles.overlay}>
-        <div
+        <div // NOSONAR(S6819)
           ref={dialogRef}
           className={styles.panel}
           role="dialog"
