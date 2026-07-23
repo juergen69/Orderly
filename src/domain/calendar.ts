@@ -61,7 +61,7 @@ function compareStrings(a: string, b: string): number {
 
 function compareByBoardOrderThenCreated(a: Todo, b: Todo): number {
   if (a.boardOrder !== b.boardOrder) {
-    return a.boardOrder < b.boardOrder ? -1 : 1;
+    return compareStrings(a.boardOrder, b.boardOrder);
   }
   return compareStrings(a.createdAt, b.createdAt);
 }
