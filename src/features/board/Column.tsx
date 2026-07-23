@@ -44,9 +44,10 @@ export function Column({
     ? archivedSplit.recent
     : todos;
   const hiddenArchived = archivedSplit ? archivedSplit.archived : [];
+  const archivedItemSuffix = hiddenArchived.length === 1 ? '' : 's';
   const archiveLabel = showArchived
     ? 'Hide'
-    : `+ ${hiddenArchived.length} archived item${hiddenArchived.length === 1 ? '' : 's'}`;
+    : `+ ${hiddenArchived.length} archived item${archivedItemSuffix}`;
 
   const renderCard = (todo: Todo) => (
     <Card
