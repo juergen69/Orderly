@@ -173,7 +173,7 @@ export function CalendarView({ onOpenTodo }: CalendarViewProps) {
       </div>
 
       {selectedDay !== null && (
-        <aside className={styles.dayDetail} role="region" aria-label={`Todos on ${selectedDay}`}>
+        <aside className={styles.dayDetail} aria-label={`Todos on ${selectedDay}`}>
           <div className={styles.dayDetailHeader}>
             <h2 className={styles.dayDetailTitle}>{selectedDay}</h2>
             <button

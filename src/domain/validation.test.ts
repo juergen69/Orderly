@@ -92,38 +92,27 @@ describe('validation', () => {
   });
 
   describe('colorSchema', () => {
-    it('accepts valid hex color (lowercase)', () => {
-      const result = colorSchema.safeParse('#ff0000');
+    it.each([
+      ['#ff0000', 'lowercase'],
+      ['#FF0000', 'uppercase'],
+      ['#Ff00aA', 'mixed case'],
+    ])('accepts valid hex color (%s)', (input) => {
+      const result = colorSchema.safeParse(input);
       expect(result.success).toBe(true);
     });
 
-    it('accepts valid hex color (uppercase)', () => {
-      const result = colorSchema.safeParse('#FF0000');
-      expect(result.success).toBe(true);
-    });
-
-    it('accepts valid hex color (mixed case)', () => {
-      const result = colorSchema.safeParse('#Ff00aA');
-      expect(result.success).toBe(true);
-    });
-
-    it('rejects invalid hex (3 digits)', () => {
-      const result = colorSchema.safeParse('#fff');
+    it.each([
+      ['#fff', '3 digits'],
+      ['ff0000', 'missing #'],
+      ['#gg0000', 'invalid chars'],
+      ['', 'empty string'],
+    ])('rejects invalid hex (%s)', (input) => {
+      const result = colorSchema.safeParse(input);
       expect(result.success).toBe(false);
     });
 
-    it('rejects invalid hex (missing #)', () => {
-      const result = colorSchema.safeParse('ff0000');
-      expect(result.success).toBe(false);
-    });
-
-    it('rejects invalid hex (invalid chars)', () => {
-      const result = colorSchema.safeParse('#gg0000');
-      expect(result.success).toBe(false);
-    });
-
-    it('rejects empty string', () => {
-      const result = colorSchema.safeParse('');
+    it('rejects whitespace-only string', () => {
+      const result = colorSchema.safeParse('   ');
       expect(result.success).toBe(false);
     });
   });
@@ -211,39 +200,17 @@ describe('validation', () => {
       expect(result.success).toBe(true);
     });
 
-    it('rejects invalid format (wrong separator)', () => {
-      const result = dueDateSchema.safeParse('2024/01/15');
-      expect(result.success).toBe(false);
-    });
-
-    it('rejects invalid format (missing parts)', () => {
-      const result = dueDateSchema.safeParse('2024-01');
-      expect(result.success).toBe(false);
-    });
-
-    it('rejects invalid calendar date (Feb 30)', () => {
-      const result = dueDateSchema.safeParse('2024-02-30');
-      expect(result.success).toBe(false);
-    });
-
-    it('rejects invalid calendar date (Apr 31)', () => {
-      const result = dueDateSchema.safeParse('2024-04-31');
-      expect(result.success).toBe(false);
-    });
-
-    it('accepts valid leap year date', () => {
-      const result = dueDateSchema.safeParse('2024-02-29');
-      expect(result.success).toBe(true);
-    });
-
-    it('rejects invalid leap year date', () => {
-      const result = dueDateSchema.safeParse('2023-02-29');
-      expect(result.success).toBe(false);
-    });
-
-    it('rejects invalid month', () => {
-      const result = dueDateSchema.safeParse('2024-13-01');
-      expect(result.success).toBe(false);
+    it.each([
+      ['2024/01/15', false],
+      ['2024-01', false],
+      ['2024-02-30', false],
+      ['2024-04-31', false],
+      ['2024-02-29', true],
+      ['2023-02-29', false],
+      ['2024-13-01', false],
+    ])('validates due date %s correctly', (input, expected) => {
+      const result = dueDateSchema.safeParse(input);
+      expect(result.success).toBe(expected);
     });
 
     it('rejects invalid day', () => {

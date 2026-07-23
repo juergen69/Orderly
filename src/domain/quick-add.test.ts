@@ -17,23 +17,17 @@ describe('parseQuickAdd', () => {
     expect(r.tags).toEqual(['home', 'urgent']);
   });
 
-  it('matches a project case-insensitively via @', () => {
-    const r = parseQuickAdd('email boss @work', projects, TODAY);
-    expect(r.projectId).toBe('p1');
-    expect(r.title).toBe('email boss');
-  });
-
-  it('preserves unmatched @ tokens in the title', () => {
-    const r = parseQuickAdd('call @dentist', projects, TODAY);
-    expect(r.projectId).toBeNull();
-    expect(r.title).toBe('call @dentist');
-  });
-
-  it('matches a multi-word project name', () => {
-    const r = parseQuickAdd('review @My Project specs !today', projects, TODAY);
-    expect(r.projectId).toBe('p3');
-    expect(r.title).toBe('review specs');
-    expect(r.dueDate).toBe('2025-01-15');
+  it.each([
+    ['email boss @work', 'p1', 'email boss', undefined],
+    ['call @dentist', null, 'call @dentist', undefined],
+    ['review @My Project specs !today', 'p3', 'review specs', '2025-01-15'],
+  ])('parses @project references (%s)', (input, projectId, title, dueDate) => {
+    const r = parseQuickAdd(input, projects, TODAY);
+    expect(r.projectId).toBe(projectId);
+    expect(r.title).toBe(title);
+    if (dueDate !== undefined) {
+      expect(r.dueDate).toBe(dueDate);
+    }
   });
 
   it('longest match wins when multiple projects share a prefix', () => {
