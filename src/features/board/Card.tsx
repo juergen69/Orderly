@@ -72,6 +72,7 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
   const overdue = hasOverdueDueDate(todo);
   const nextOccurrence = computeNextOccurrence(todo);
   const snippet = computeSnippet(todo.description);
+  const duePrefix = overdue ? 'Overdue: ' : 'Due:';
 
   const { visibleTags, overflowCount } = computeTagVisibility(todo.tags, maxTags);
 
@@ -157,8 +158,7 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
 
       {todo.dueDate !== null && (
         <p className={overdue ? styles.dueOverdue : styles.due}>
-          {overdue ? 'Overdue: ' : 'Due: '}
-          {todo.dueDate}
+          {duePrefix} {todo.dueDate}
           {nextOccurrence !== null && (
             <span className={styles.next}> · next {nextOccurrence}</span>
           )}

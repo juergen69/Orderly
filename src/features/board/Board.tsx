@@ -308,7 +308,10 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
     const raw = (textarea?.value ?? composerDraft).trim();
     if (raw.length === 0) return;
     const parsed = parseQuickAdd(raw, projects, todayIso());
-    const title = parsed.title.length > 0 ? parsed.title : (parsed.projectId !== null ? parsed.title : raw);
+    let title = parsed.title;
+    if (title.length === 0 && parsed.projectId === null) {
+      title = raw;
+    }
     try {
       await createTodo({
         title,

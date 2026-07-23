@@ -19,13 +19,13 @@ export function Linkify({ text }: { text: string }): ReactNode {
 
   const nodes: ReactNode[] = [];
   let cursor = 0;
-  urls.forEach((url, index) => {
+  urls.forEach((url) => {
     if (url.start > cursor) {
-      nodes.push(<Fragment key={`t${index}`}>{text.slice(cursor, url.start)}</Fragment>);
+      nodes.push(<Fragment key={`t-${url.start}`}>{text.slice(cursor, url.start)}</Fragment>);
     }
     nodes.push(
       <a
-        key={`u${index}`}
+        key={`u-${url.start}`}
         href={normalizeHref(url.value)}
         target="_blank"
         rel="noopener noreferrer"
