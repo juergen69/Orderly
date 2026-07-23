@@ -16,7 +16,7 @@ const STORES = ['projects', 'todos', 'subSteps'] as const;
 type StoreName = (typeof STORES)[number];
 
 class IndexedDbRepository implements Repository {
-  private dbName: string;
+  private readonly dbName: string;
   private db: IDBDatabase | null = null;
   private dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -55,7 +55,7 @@ class IndexedDbRepository implements Repository {
 
       request.onerror = () => {
         this.dbPromise = null;
-        reject(request.error);
+        reject(request.error ?? new Error('IndexedDB request failed'));
       };
     });
 
@@ -216,7 +216,7 @@ class IndexedDbRepository implements Repository {
         .getAll();
 
       request.onsuccess = () => resolve(request.result as T[]);
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed'));
     });
   }
 
@@ -232,7 +232,7 @@ class IndexedDbRepository implements Repository {
         .get(id);
 
       request.onsuccess = () => resolve(request.result ?? null);
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed'));
     });
   }
 
@@ -250,7 +250,7 @@ class IndexedDbRepository implements Repository {
         .getAll(IDBKeyRange.only(value));
 
       request.onsuccess = () => resolve(request.result as T[]);
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed'));
     });
   }
 
@@ -262,7 +262,7 @@ class IndexedDbRepository implements Repository {
         .put(item);
 
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed'));
     });
   }
 
@@ -274,7 +274,7 @@ class IndexedDbRepository implements Repository {
         .delete(id);
 
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed'));
     });
   }
 

@@ -84,6 +84,21 @@ function patchTodoReminder(todo: Todo): Todo {
   return { ...todo, reminderAt };
 }
 
+function getRemainingSubStepsForDeletedProject(
+  todos: readonly Todo[],
+  subSteps: readonly SubStep[],
+  projectId: string,
+): SubStep[] {
+  return subSteps.filter((s) => !todos.some((t) => t.projectId === projectId && t.id === s.todoId));
+}
+
+function removeTagFilterFromUi(ui: UiState, tag: string): UiState {
+  return {
+    ...ui,
+    selectedTags: ui.selectedTags.filter((t) => t !== tag),
+  };
+}
+
 export interface CreateStoreOptions {
   repository: Repository;
 }
@@ -148,7 +163,7 @@ export function createStore(options: CreateStoreOptions) {
       let remainingSubSteps = subSteps;
       if (options.mode === 'cascade') {
         remainingTodos = todos.filter((t) => t.projectId !== id);
-        remainingSubSteps = subSteps.filter((s) => !todos.some((t) => t.projectId === id && t.id === s.todoId));
+        remainingSubSteps = getRemainingSubStepsForDeletedProject(todos, subSteps, id);
       } else {
         const target = options.reassignTo ?? null;
         remainingTodos = todos.map((t) =>
@@ -407,12 +422,7 @@ export function createStore(options: CreateStoreOptions) {
     },
 
     removeTagFilter(tag) {
-      set((state) => ({
-        ui: {
-          ...state.ui,
-          selectedTags: state.ui.selectedTags.filter((t) => t !== tag),
-        },
-      }));
+      set((state) => ({ ui: removeTagFilterFromUi(state.ui, tag) }));
     },
 
     clearTagFilters() {

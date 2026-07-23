@@ -168,7 +168,12 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
 
   return (
     <>
+<<<<<<< ours
       <div className={styles.overlay} role="presentation">
+=======
+      <div className={styles.overlay}>
+        {/* NOSONAR(S6819) */}
+>>>>>>> theirs
         <div
           ref={dialogRef}
           className={styles.panel}
