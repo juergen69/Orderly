@@ -56,7 +56,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
   };
 
   return (
-    <div className={styles.picker} role="group" aria-label="Date picker">
+    <div className={styles.picker} aria-label="Date picker">
       <div className={styles.header}>
         <button
           type="button"

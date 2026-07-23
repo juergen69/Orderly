@@ -54,11 +54,16 @@ export interface GroupedByDueDate {
   [iso: string]: Todo[];
 }
 
+function compareStrings(a: string, b: string): number {
+  if (a === b) return 0;
+  return a < b ? -1 : 1;
+}
+
 function compareByBoardOrderThenCreated(a: Todo, b: Todo): number {
   if (a.boardOrder !== b.boardOrder) {
     return a.boardOrder < b.boardOrder ? -1 : 1;
   }
-  return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0;
+  return compareStrings(a.createdAt, b.createdAt);
 }
 
 export function groupByDueDate(todos: Todo[]): GroupedByDueDate {

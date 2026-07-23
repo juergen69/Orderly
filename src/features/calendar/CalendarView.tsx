@@ -141,11 +141,12 @@ export function CalendarView({ onOpenTodo }: CalendarViewProps) {
       </div>
 
       <div className={styles.grid} role="grid" aria-label="Month">
-        {grid.map((week, wi) => (
-          <div key={wi} className={styles.week} role="row">
+        {grid.map((week) => (
+          <div key={week[0]?.iso} className={styles.week} role="row">
             {week.map((day) => {
               const dayTodos = grouped[day.iso] ?? [];
               const isToday = today === day.iso;
+              const dayAriaLabel = dayTodos.length > 0 ? `${day.iso}, ${dayTodos.length} todos` : day.iso;
               return (
                 <button
                   key={day.iso}
@@ -154,7 +155,7 @@ export function CalendarView({ onOpenTodo }: CalendarViewProps) {
                   className={styles.day}
                   data-outside={!day.inMonth || undefined}
                   data-today={isToday || undefined}
-                  aria-label={`${day.iso}${dayTodos.length ? `, ${dayTodos.length} todos` : ''}`}
+                  aria-label={dayAriaLabel}
                   onClick={() => setSelectedDay(day.iso)}
                 >
                   <span className={styles.dayNumber}>{day.date.getDate()}</span>
