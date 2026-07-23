@@ -168,7 +168,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
 
   return (
     <>
-      <div className={styles.overlay} role="presentation">
+      <div className={styles.overlay}>
         <div
           ref={dialogRef}
           className={styles.panel}

@@ -87,7 +87,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         role="dialog"
         aria-modal="true"
         aria-label="Command palette"
-        onKeyDown={handleKeyDown} // NOSONAR(S6847): dialog container needs keyboard trap/Escape
+        onKeyDown={handleKeyDown} // NOSONAR(S6847)
       >
         <input
           ref={inputRef}
