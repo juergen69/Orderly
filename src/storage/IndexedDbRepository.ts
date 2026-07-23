@@ -16,7 +16,7 @@ const STORES = ['projects', 'todos', 'subSteps'] as const;
 type StoreName = (typeof STORES)[number];
 
 class IndexedDbRepository implements Repository {
-  private dbName: string;
+  private readonly dbName: string;
   private db: IDBDatabase | null = null;
   private dbPromise: Promise<IDBDatabase> | null = null;
 

@@ -76,7 +76,7 @@ export async function runRecurrenceTick(): Promise<void> {
 
       const originalSubSteps = subSteps
         .filter((s) => s.todoId === todo.id)
-        .sort((a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : 0));
+        .sort((a, b) => a.order.localeCompare(b.order));
 
       // Demote the original synchronously so re-runs never re-process it.
       store.setState((s) => ({

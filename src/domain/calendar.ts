@@ -54,6 +54,13 @@ export interface GroupedByDueDate {
   [iso: string]: Todo[];
 }
 
+function compareByBoardOrderThenCreated(a: Todo, b: Todo): number {
+  if (a.boardOrder !== b.boardOrder) {
+    return a.boardOrder < b.boardOrder ? -1 : 1;
+  }
+  return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0;
+}
+
 export function groupByDueDate(todos: Todo[]): GroupedByDueDate {
   const grouped: GroupedByDueDate = {};
 
@@ -69,12 +76,7 @@ export function groupByDueDate(todos: Todo[]): GroupedByDueDate {
   }
 
   for (const iso of Object.keys(grouped)) {
-    (grouped[iso] ?? []).sort((a, b) => {
-      if (a.boardOrder !== b.boardOrder) {
-        return a.boardOrder < b.boardOrder ? -1 : 1;
-      }
-      return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0;
-    });
+    (grouped[iso] ?? []).sort(compareByBoardOrderThenCreated);
   }
 
   return grouped;

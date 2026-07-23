@@ -65,6 +65,6 @@ export function selectProjectsSorted(projects: Project[]): Project[] {
     if (a.order !== b.order) {
       return a.order < b.order ? -1 : 1;
     }
-    return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0;
+    return compareStrings(a.createdAt, b.createdAt);
   });
 }

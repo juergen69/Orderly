@@ -44,6 +44,9 @@ export function Column({
     ? archivedSplit.recent
     : todos;
   const hiddenArchived = archivedSplit ? archivedSplit.archived : [];
+  const archiveLabel = showArchived
+    ? 'Hide'
+    : `+ ${hiddenArchived.length} archived item${hiddenArchived.length === 1 ? '' : 's'}`;
 
   const renderCard = (todo: Todo) => (
     <Card
@@ -89,9 +92,7 @@ export function Column({
               aria-expanded={showArchived}
               onClick={() => setShowArchived((v) => !v)}
             >
-              {showArchived
-                ? 'Hide'
-                : `+ ${hiddenArchived.length} archived item${hiddenArchived.length === 1 ? '' : 's'}`}
+              {archiveLabel}
             </button>
             {showArchived && (
               <ul className={styles.archivedList} data-archived="true">
