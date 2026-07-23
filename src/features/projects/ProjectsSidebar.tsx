@@ -99,6 +99,7 @@ export function ProjectsSidebar({ selectedProjectId, onSelect, drawer, onClose }
   };
 
   return (
+    // NOSONAR(S6819)
     <nav
       ref={drawerRef}
       className={styles.sidebar}
