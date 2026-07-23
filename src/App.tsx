@@ -117,7 +117,8 @@ function App() {
         >
           ⌘K
         </button>
-        <div className={styles.viewSwitch} role="group" aria-label="View">
+        <fieldset className={styles.viewSwitch}>
+          <legend className={styles.legend}>View</legend>
           <button
             type="button"
             className={styles.viewButton}
@@ -136,7 +137,7 @@ function App() {
           >
             Calendar
           </button>
-        </div>
+        </fieldset>
       </header>
 
       <div className={styles.body}>
@@ -173,7 +174,15 @@ function App() {
         )}
       </div>
 
-      {sidebarOpen && <div className={styles.backdrop} data-visible role="button" tabIndex={0} onClick={() => setSidebarOpen(false)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSidebarOpen(false); } }} />}
+      {sidebarOpen && (
+        <button
+          type="button"
+          className={styles.backdrop}
+          data-visible
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       <TickerHost />
 
