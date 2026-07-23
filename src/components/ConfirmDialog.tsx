@@ -93,7 +93,7 @@ export function ConfirmDialog({
         if (event.target === event.currentTarget) onCancel();
       }}
     >
-      <div // NOSONAR(S6819)
+      <div
         ref={dialogRef}
         className={styles.dialog}
         role="dialog"

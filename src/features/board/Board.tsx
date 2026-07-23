@@ -510,7 +510,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
             if (e.target === e.currentTarget) setComposerOpen(false);
           }}
         >
-          <div // NOSONAR(S6819)
+          <div
             ref={dialogRef}
             className={styles.sheet}
             role="dialog"
@@ -561,7 +561,7 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
                   />
                 </label>
                 {projectSuggestions !== null && (
-                  <div className={styles.projectSuggestions} role="listbox"> // NOSONAR(S6819)
+                  <div className={styles.projectSuggestions} role="listbox">
                     {projectSuggestions.length === 0 ? (
                       <div className={styles.projectSuggestionEmpty}>No matching projects</div>
                     ) : (
