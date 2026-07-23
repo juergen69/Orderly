@@ -75,6 +75,7 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
   const duePrefix = overdue ? 'Overdue: ' : 'Due:';
 
   const { visibleTags, overflowCount } = computeTagVisibility(todo.tags, maxTags);
+  const hasTitle = todo.title.trim().length > 0;
 
   return (
     <li
@@ -140,16 +141,16 @@ export function Card({ todo, project, subSteps, onToggleFrog, onOpenTodo, maxTag
         {onOpenTodo ? (
           <button
             type="button"
-            className={todo.title.trim() ? styles.titleButton : `${styles.titleButton} ${styles.placeholderButton}`}
+            className={hasTitle ? styles.titleButton : `${styles.titleButton} ${styles.placeholderButton}`}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               onOpenTodo(todo.id);
             }}
           >
-            {todo.title.trim() || '(untitled)'}
+            {hasTitle ? todo.title : '(untitled)'}
           </button>
-        ) : todo.title.trim() ? (
+        ) : hasTitle ? (
           todo.title
         ) : (
           <span className={styles.placeholder}>(untitled)</span>

@@ -20,11 +20,11 @@ export function ToastHost({
   onDismiss: (id: string) => void;
 }) {
   return (
-    <div className={styles.host} role="region" aria-label="Notifications">
+    <section className={styles.host} aria-label="Notifications">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
       ))}
-    </div>
+    </section>
   );
 }
 
