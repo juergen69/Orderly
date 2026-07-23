@@ -20,7 +20,7 @@ import { getActiveStore } from '../../store/storeInstance';
 import styles from './SubSteps.module.css';
 
 function sortByOrder(items: SubStep[]): SubStep[] {
-  return [...items].sort((a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : 0));
+  return [...items].sort((a, b) => a.order.localeCompare(b.order));
 }
 
 export function SubSteps({ todoId }: { todoId: string }) {

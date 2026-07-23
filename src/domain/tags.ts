@@ -1,5 +1,10 @@
 import { normalizeTags } from './validation';
 
+function compareStrings(a: string, b: string): number {
+  if (a === b) return 0;
+  return a < b ? -1 : 1;
+}
+
 export function normalizeTagList(tags: string[]): string[] {
   return normalizeTags(tags);
 }
@@ -18,7 +23,7 @@ export function sortTagsForSidebar(tags: string[]): string[] {
     if (ca !== cb) {
       return cb - ca;
     }
-    return a < b ? -1 : a > b ? 1 : 0;
+    return compareStrings(a, b);
   });
 
   return unique;
