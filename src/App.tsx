@@ -178,9 +178,7 @@ function App() {
         <button
           type="button"
           className={styles.backdrop}
-          data-visible
           onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
         />
       )}
 

@@ -83,11 +83,11 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       }}
     >
       <div
-        className={styles.dialog} // NOSONAR(S6847): dialog container needs keyboard trap/Escape
+        className={styles.dialog}
         role="dialog"
         aria-modal="true"
         aria-label="Command palette"
-        onKeyDown={handleKeyDown}
+        onKeyDown={handleKeyDown} // NOSONAR(S6847)
       >
         <input
           ref={inputRef}

@@ -46,6 +46,14 @@
   overflow: hidden;
 }
 
+.legend {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+}
+
 .viewButton {
   background: none;
   border: none;

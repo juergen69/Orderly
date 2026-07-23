@@ -95,11 +95,11 @@ export function ConfirmDialog({
     >
       <div
         ref={dialogRef}
-        className={styles.dialog} // NOSONAR(S6847): dialog container needs keyboard trap/Escape
+        className={styles.dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        onKeyDown={handleKeyDown}
+        onKeyDown={handleKeyDown} // NOSONAR(S6847)
       >
         <h2 id={titleId} className={styles.title}>
           {title}
