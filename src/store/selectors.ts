@@ -8,15 +8,27 @@ export function selectTodosByProject(todos: Todo[], projectId: string | null): T
   return todos.filter((t) => t.projectId === projectId);
 }
 
+function compareStrings(a: string, b: string): number {
+  if (a === b) return 0;
+  return a < b ? -1 : 1;
+}
+
+function compareByBoardOrderThenCreated(a: Todo, b: Todo): number {
+  if (a.boardOrder !== b.boardOrder) {
+    return a.boardOrder < b.boardOrder ? -1 : 1;
+  }
+  return compareStrings(a.createdAt, b.createdAt);
+}
+
+function sortTagsByFrequencyThenName(a: { tag: string; count: number }, b: { tag: string; count: number }): number {
+  if (a.count !== b.count) return b.count - a.count;
+  return compareStrings(a.tag, b.tag);
+}
+
 export function selectTodosByStatus(todos: Todo[], status: Todo['status']): Todo[] {
   return todos
     .filter((t) => t.status === status)
-    .sort((a, b) => {
-      if (a.boardOrder !== b.boardOrder) {
-        return a.boardOrder < b.boardOrder ? -1 : 1;
-      }
-      return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0;
-    });
+    .sort(compareByBoardOrderThenCreated);
 }
 
 export function selectTodosByDate(todos: Todo[], dateIso: string): Todo[] {
@@ -36,10 +48,7 @@ export function selectTagFrequencies(todos: Todo[]): Array<{ tag: string; count:
   const sortedTags = sortTagsForSidebar([...counts.keys()]);
   return sortedTags
     .map((tag) => ({ tag, count: counts.get(tag) ?? 0 }))
-    .sort((a, b) => {
-      if (a.count !== b.count) return b.count - a.count;
-      return a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0;
-    });
+    .sort(sortTagsByFrequencyThenName);
 }
 
 export function selectTodoProgress(subSteps: SubStep[], todoId: string) {

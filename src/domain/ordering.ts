@@ -114,7 +114,8 @@ export function rebalance(keys: string[]): string[] {
   const order = keys.map((_, idx) => idx).sort((x, y) => {
     const kx = keys[x]!;
     const ky = keys[y]!;
-    return kx < ky ? -1 : kx > ky ? 1 : 0;
+    if (kx === ky) return 0;
+    return kx < ky ? -1 : 1;
   });
 
   // Use enough digits of precision that adjacent generated values cannot
