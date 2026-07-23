@@ -13,7 +13,6 @@ export function RecurringFilter() {
   return (
     <div
       className={styles.toggle}
-      role="group"
       aria-label="Recurring visibility"
     >
       <button

@@ -103,6 +103,20 @@ function isEditableElement(element: Element | null): boolean {
   return element instanceof HTMLElement && element.isContentEditable;
 }
 
+function computeProjectAutocomplete(
+  draft: string,
+  cursorPos: number,
+): { start: number; query: string } | null {
+  let end = cursorPos;
+  while (end > 0 && draft[end - 1] !== ' ' && draft[end - 1] !== '\n') {
+    end--;
+  }
+  if (end < cursorPos && draft[end] === '@') {
+    return { start: end, query: draft.substring(end + 1, cursorPos) };
+  }
+  return null;
+}
+
 export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
   const storeRef = getActiveStore();
   const allTodos = storeRef((s) => s.todos);
@@ -283,20 +297,6 @@ export function Board({ filterProjectId, onOpenTodo }: BoardProps) {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [composerOpen, projectSuggestions]);
-
-  function computeProjectAutocomplete(
-    draft: string,
-    cursorPos: number,
-  ): { start: number; query: string } | null {
-    let end = cursorPos;
-    while (end > 0 && draft[end - 1] !== ' ' && draft[end - 1] !== '\n') {
-      end--;
-    }
-    if (end < cursorPos && draft[end] === '@') {
-      return { start: end, query: draft.substring(end + 1, cursorPos) };
-    }
-    return null;
-  }
 
   function filterProjects(list: Project[], query: string): Project[] {
     const lower = query.toLowerCase();

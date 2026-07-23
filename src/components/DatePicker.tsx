@@ -88,8 +88,8 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
       </div>
 
       <div className={styles.grid} role="grid">
-        {grid.map((week, wi) => (
-          <div key={wi} className={styles.week} role="row">
+        {grid.map((week) => (
+          <div key={week[0]?.iso} className={styles.week} role="row">
             {week.map((day) => {
               const selected = value === day.iso;
               const isToday = today === day.iso;
