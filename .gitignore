@@ -26,5 +26,9 @@ dist-ssr
 # Test coverage
 coverage
 
+# SonarQube scanner state and generated issue report
+.scannerwork/
+sonar-issues.json
+
 # TypeScript build info
 *.tsbuildinfo
