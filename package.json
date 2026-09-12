@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "prepare": "git config core.hooksPath .githooks",
-    "sonar": "sonar-scanner -Dsonar.qualitygate.wait=true; status=$?; npm run sonar:report; exit $status",
+    "sonar": "npm run test:coverage && sonar-scanner -Dsonar.qualitygate.wait=true; status=$?; npm run sonar:report; exit $status",
     "sonar:report": "bash scripts/sonar-report.sh",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
